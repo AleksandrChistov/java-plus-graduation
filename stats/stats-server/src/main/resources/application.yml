@@ -1,0 +1,25 @@
+server.port: 9090
+
+spring:
+  application.name: ExploreWithMeStatsServer
+  main.banner-mode: OFF
+  jpa:
+    show-sql: true
+    hibernate.ddl-auto: validate
+    properties.hibernate:
+      format_sql: true
+      jdbc.time_zone: UTC
+  sql.init.mode: always
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6541/explorewithme
+    username: explorewithme
+    password: explorewithme
+
+logging.level.org.springframework:
+  web.client.RestTemplate: DEBUG
+  orm:
+    jpa: INFO
+    jpa.JpaTransactionManager: DEBUG
+  transaction: INFO
+  transaction.interceptor: DEBUG

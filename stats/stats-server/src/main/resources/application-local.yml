@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:explorewithme
+    username: explorewithme
+    password: explorewithme
+
+logging.level.org.springframework:
+  web.client.RestTemplate: DEBUG
+  orm:
+    jpa: INFO
+    jpa.JpaTransactionManager: DEBUG
+  transaction: INFO
+  transaction.interceptor: DEBUG

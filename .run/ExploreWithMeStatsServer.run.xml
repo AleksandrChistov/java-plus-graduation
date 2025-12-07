@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ExploreWithMeStatsServer" type="AmplicodeSpringBootApplication" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="ru.practicum.explorewithme.ExploreWithMeStatsServer" />
+    <module name="stats-server" />
+    <option name="profiles">
+      <list>
+        <option value="" />
+      </list>
+    </option>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
