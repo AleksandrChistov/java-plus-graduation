@@ -1,4 +1,11 @@
 services:
+  discovery-server:
+    build: infra/discovery-server
+    image: discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+
   stats-server:
     build: stats/stats-server
     image: stats-server
@@ -6,11 +13,13 @@ services:
     ports:
       - "9090:9090"
     depends_on:
+      - discovery-server
       - stats-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
 
   stats-db:
     image: postgres:16.1
@@ -33,12 +42,14 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      - discovery-server
       - ewm-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
       - STATS_SERVER_URL=http://stats-server:9090
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
 
   ewm-db:
     image: postgres:16.1
