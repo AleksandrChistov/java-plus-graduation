@@ -1,12 +1,13 @@
 package ru.practicum.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.StatsDto;
 import ru.practicum.StatsParams;
 import ru.practicum.StatsView;
+import ru.practicum.client.config.StatsService;
+import ru.practicum.client.exception.StatsClientException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,14 +21,13 @@ import java.util.List;
 public class StatsClientImpl implements StatsClient {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private final HttpClient httpClient;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper;
-    private final String serverUrl;
+    private final StatsService statsService;
 
-    public StatsClientImpl(@Value("${stats.server.url:http://localhost:9090}") String serverUrl, ObjectMapper objectMapper) {
-        this.serverUrl = serverUrl;
-        this.httpClient = HttpClient.newHttpClient();
+    public StatsClientImpl(ObjectMapper objectMapper, StatsService statsService) {
         this.objectMapper = objectMapper;
+        this.statsService = statsService;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class StatsClientImpl implements StatsClient {
             String requestBody = objectMapper.writeValueAsString(statsDto);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(serverUrl + "/hit"))
+                    .uri(statsService.makeUri("/hit"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
@@ -54,7 +54,8 @@ public class StatsClientImpl implements StatsClient {
     @Override
     public List<StatsView> getStats(StatsParams statsParams) {
         try {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
+            String uriStr = statsService.makeUri("/stats").toString();
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(uriStr)
                     .queryParam("start", encodeDateTime(statsParams.getStart()))
                     .queryParam("end", encodeDateTime(statsParams.getEnd()));
 
