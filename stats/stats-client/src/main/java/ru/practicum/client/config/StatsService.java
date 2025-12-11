@@ -1,6 +1,5 @@
 package ru.practicum.client.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.retry.support.RetryTemplate;
@@ -14,17 +13,16 @@ public class StatsService {
 
     private final DiscoveryClient discoveryClient;
 
-    private final String statsServiceId;
+    private final String SERVICE_ID = "stats-server";
 
     private final RetryTemplate retryTemplate = RetryTemplate.builder()
-            .maxAttempts(3)
-            .exponentialBackoff(100, 5, 2000)
+            .maxAttempts(10)
+            .exponentialBackoff(100, 5, 5000)
             .retryOn(StatsServerUnavailable.class)
             .build();
 
-    private StatsService(@Value("${service.ids.stats}") String statsServiceId, DiscoveryClient discoveryClient) {
+    private StatsService(DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
-        this.statsServiceId = statsServiceId;
     }
 
     public URI makeUri(String path) {
@@ -39,11 +37,11 @@ public class StatsService {
     private ServiceInstance getInstance() {
         try {
             return discoveryClient
-                    .getInstances(statsServiceId)
+                    .getInstances(SERVICE_ID)
                     .getFirst();
         } catch (Exception exception) {
             throw new StatsServerUnavailable(
-                    "Ошибка обнаружения адреса сервиса статистики с id: " + statsServiceId,
+                    "Ошибка обнаружения адреса сервиса статистики с id: " + SERVICE_ID,
                     exception
             );
         }
