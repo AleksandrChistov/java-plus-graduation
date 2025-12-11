@@ -9,11 +9,3 @@ spring:
     hibernate:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
-
-logging.level.org.springframework:
-  web.client.RestTemplate: DEBUG
-  orm:
-    jpa: INFO
-    jpa.JpaTransactionManager: DEBUG
-  transaction: INFO
-  transaction.interceptor: DEBUG
