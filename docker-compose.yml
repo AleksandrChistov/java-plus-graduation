@@ -5,6 +5,40 @@ services:
     container_name: discovery-server
     ports:
       - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    networks:
+      - microservice-net
+
+  config-server:
+    build: infra/config-server
+    image: config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - SERVER_PORT=8888
+    healthcheck:
+      test: >
+        bash -c '
+          curl -f http://localhost:8888/actuator/health ||
+          (echo "Health check failed" && exit 1)
+        '
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    networks:
+      - microservice-net
 
   stats-server:
     build: stats/stats-server
@@ -13,13 +47,20 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - discovery-server
-      - stats-db
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      stats-db:
+        condition: service_healthy
     environment:
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+    networks:
+      - microservice-net
 
   stats-db:
     image: postgres:16.1
@@ -29,11 +70,15 @@ services:
       - POSTGRES_PASSWORD=explorewithme
       - POSTGRES_USER=explorewithme
       - POSTGRES_DB=explorewithme
+    volumes:
+      - ./stats/stats-server/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
       interval: 5s
       retries: 10
+    networks:
+      - microservice-net
 
   ewm-service:
     build: core/main-service
@@ -42,14 +87,21 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - discovery-server
-      - ewm-db
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      ewm-db:
+        condition: service_healthy
     environment:
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
       - STATS_SERVER_URL=http://stats-server:9090
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+    networks:
+      - microservice-net
 
   ewm-db:
     image: postgres:16.1
@@ -59,8 +111,16 @@ services:
       - POSTGRES_PASSWORD=explorewithme
       - POSTGRES_USER=explorewithme
       - POSTGRES_DB=explorewithme
+    volumes:
+      - ./core/main-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
       interval: 5s
       retries: 10
+    networks:
+      - microservice-net
+
+networks:
+  microservice-net:
+    driver: bridge
