@@ -1,6 +1,6 @@
-package ru.practicum.client;
+package ru.practicum.client.exception;
 
-class StatsClientException extends RuntimeException {
+public class StatsClientException extends RuntimeException {
     public StatsClientException(String message) {
         super(message);
     }
