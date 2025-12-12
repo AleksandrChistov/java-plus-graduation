@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.dto;
+package ru.practicum.explorewithme.comment.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

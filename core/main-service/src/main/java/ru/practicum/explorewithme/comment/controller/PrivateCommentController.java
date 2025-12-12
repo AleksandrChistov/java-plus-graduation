@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.controller;
+package ru.practicum.explorewithme.comment.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.event.comment.dto.NewCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.service.PrivateCommentService;
+import ru.practicum.explorewithme.comment.dto.NewCommentDto;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.service.PrivateCommentService;
 
 @RestController
 @Slf4j

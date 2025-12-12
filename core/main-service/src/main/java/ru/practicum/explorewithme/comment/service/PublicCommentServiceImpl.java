@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.service;
+package ru.practicum.explorewithme.comment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -7,11 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
-import ru.practicum.explorewithme.event.comment.dao.CommentRepository;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.mapper.CommentMapper;
-import ru.practicum.explorewithme.event.comment.model.Comment;
+import ru.practicum.explorewithme.comment.dao.CommentRepository;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.mapper.CommentMapper;
+import ru.practicum.explorewithme.comment.model.Comment;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.model.Event;
 

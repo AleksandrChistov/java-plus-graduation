@@ -1,8 +1,8 @@
-package ru.practicum.explorewithme.event.comment.service;
+package ru.practicum.explorewithme.comment.service;
 
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.UpdateCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.UpdateCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
-package ru.practicum.explorewithme.event.comment.dto;
+package ru.practicum.explorewithme.comment.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import ru.practicum.explorewithme.event.comment.enums.Status;
+import ru.practicum.explorewithme.comment.enums.Status;
 
 @Getter
 @Setter

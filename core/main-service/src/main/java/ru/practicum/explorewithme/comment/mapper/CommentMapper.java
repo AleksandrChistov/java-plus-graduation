@@ -1,14 +1,14 @@
-package ru.practicum.explorewithme.event.comment.mapper;
+package ru.practicum.explorewithme.comment.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.practicum.explorewithme.event.comment.dto.NewCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.UpdateCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.model.Comment;
+import ru.practicum.explorewithme.comment.dto.NewCommentDto;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.UpdateCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.model.Comment;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.user.model.User;
 

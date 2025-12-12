@@ -1,10 +1,10 @@
-package ru.practicum.explorewithme.event.comment.model;
+package ru.practicum.explorewithme.comment.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import ru.practicum.explorewithme.event.comment.enums.Status;
+import ru.practicum.explorewithme.comment.enums.Status;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.user.model.User;
 

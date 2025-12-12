@@ -1,7 +1,7 @@
-package ru.practicum.explorewithme.event.comment.service;
+package ru.practicum.explorewithme.comment.service;
 
-import ru.practicum.explorewithme.event.comment.dto.NewCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.NewCommentDto;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
 
 public interface PrivateCommentService {
     ResponseCommentDto create(Long userId, Long eventId, NewCommentDto dto);

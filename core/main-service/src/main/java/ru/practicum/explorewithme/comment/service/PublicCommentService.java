@@ -1,8 +1,8 @@
-package ru.practicum.explorewithme.event.comment.service;
+package ru.practicum.explorewithme.comment.service;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
 
 import java.util.List;
 

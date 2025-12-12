@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.controller;
+package ru.practicum.explorewithme.comment.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -10,10 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.UpdateCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.service.AdminCommentService;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.UpdateCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.service.AdminCommentService;
 
 import java.util.List;
 

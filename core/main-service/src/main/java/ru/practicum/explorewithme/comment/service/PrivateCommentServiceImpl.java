@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.service;
+package ru.practicum.explorewithme.comment.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.error.exception.RuleViolationException;
-import ru.practicum.explorewithme.event.comment.dao.CommentRepository;
-import ru.practicum.explorewithme.event.comment.dto.NewCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.mapper.CommentMapper;
-import ru.practicum.explorewithme.event.comment.model.Comment;
+import ru.practicum.explorewithme.comment.dao.CommentRepository;
+import ru.practicum.explorewithme.comment.dto.NewCommentDto;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.mapper.CommentMapper;
+import ru.practicum.explorewithme.comment.model.Comment;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.model.Event;

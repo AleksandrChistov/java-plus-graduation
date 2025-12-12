@@ -1,10 +1,10 @@
-package ru.practicum.explorewithme.event.comment.dao;
+package ru.practicum.explorewithme.comment.dao;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.model.Comment;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.model.Comment;
 
 import java.util.List;
 import java.util.Optional;

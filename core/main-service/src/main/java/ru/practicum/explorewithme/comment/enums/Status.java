@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment.enums;
+package ru.practicum.explorewithme.comment.enums;
 
 public enum Status {
     PENDING,
