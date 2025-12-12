@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.comment;
+package ru.practicum.explorewithme.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -15,11 +15,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import ru.practicum.explorewithme.category.model.Category;
-import ru.practicum.explorewithme.event.comment.controller.AdminCommentController;
-import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
-import ru.practicum.explorewithme.event.comment.dto.UpdateCommentDto;
-import ru.practicum.explorewithme.event.comment.enums.Status;
-import ru.practicum.explorewithme.event.comment.model.Comment;
+import ru.practicum.explorewithme.comment.dto.ResponseCommentDto;
+import ru.practicum.explorewithme.comment.dto.UpdateCommentDto;
+import ru.practicum.explorewithme.comment.enums.Status;
+import ru.practicum.explorewithme.comment.model.Comment;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.event.model.Location;
@@ -34,8 +33,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@ActiveProfiles("local")
+@SpringBootTest(properties = {
+        "spring.config.location=classpath:application-test.yml",
+})
+@ActiveProfiles("test")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
 public class AdminCommentControllerTest {

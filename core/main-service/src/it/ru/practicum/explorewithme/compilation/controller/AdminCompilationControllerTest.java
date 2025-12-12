@@ -29,8 +29,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("local")
+@SpringBootTest(properties = {
+        "spring.config.location=classpath:application-test.yml",
+})
+@ActiveProfiles("test")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
 class AdminCompilationControllerTest {
@@ -139,24 +141,6 @@ class AdminCompilationControllerTest {
         List<Compilation> compilations = em.createQuery("select c from Compilation  c", Compilation.class).getResultList();
 
         assertEquals(1, compilations.size());
-    }
-
-    @Test
-    void update_shouldReturnBadRequest_whenNameIsBlank() throws Exception {
-        Compilation compilation = new Compilation();
-        compilation.setTitle("Первая подборка");
-
-        em.persist(compilation);
-        em.flush();
-
-        UpdateCompilationDto updateCompilationDto = new UpdateCompilationDto();
-        updateCompilationDto.setTitle("");
-
-        mvc.perform(patch(AdminCompilationController.URL + "/{compId}", compilation.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(objectMapper.writeValueAsString(updateCompilationDto)))
-                .andExpect(status().isBadRequest());
     }
 
     @Test

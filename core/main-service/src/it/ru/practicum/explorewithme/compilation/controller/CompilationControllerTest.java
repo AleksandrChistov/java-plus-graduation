@@ -19,8 +19,10 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@ActiveProfiles("local")
+@SpringBootTest(properties = {
+        "spring.config.location=classpath:application-test.yml",
+})
+@ActiveProfiles("test")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
 class CompilationControllerTest {
