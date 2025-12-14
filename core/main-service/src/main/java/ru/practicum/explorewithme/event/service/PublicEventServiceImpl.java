@@ -13,6 +13,7 @@ import ru.practicum.StatsParams;
 import ru.practicum.StatsUtil;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
@@ -27,10 +28,8 @@ import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.enums.Status;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -63,9 +62,9 @@ public class PublicEventServiceImpl implements PublicEventService {
             return Collections.emptyList();
         }
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
-        Map<Long, Long> confirmedRequests = StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
+        Map<Long, Long> confirmedRequests = StatsUtil.getConfirmedRequestsMap(requestRepository.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds));
 
         buildStatsDtoAndHit(request);
 

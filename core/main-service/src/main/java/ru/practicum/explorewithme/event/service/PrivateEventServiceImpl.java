@@ -10,6 +10,7 @@ import ru.practicum.StatsParams;
 import ru.practicum.StatsUtil;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
@@ -31,10 +32,8 @@ import ru.practicum.explorewithme.user.dao.UserRepository;
 import ru.practicum.explorewithme.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -200,8 +199,9 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventRepository.findByInitiatorIdOrderByEventDateDesc(userId, pageable).stream().toList();
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-        Map<Long, Long> confirmedRequestsMap = StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
+
+        Map<Long, Long> confirmedRequestsMap = StatsUtil.getConfirmedRequestsMap(requestRepository.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds));
 
         StatsParams params = StatsUtil.buildStatsParams(
                 eventIds.stream()

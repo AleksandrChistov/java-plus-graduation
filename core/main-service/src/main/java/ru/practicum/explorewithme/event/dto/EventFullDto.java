@@ -2,7 +2,7 @@ package ru.practicum.explorewithme.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
