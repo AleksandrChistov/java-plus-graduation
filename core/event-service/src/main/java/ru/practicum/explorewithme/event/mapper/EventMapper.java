@@ -19,7 +19,7 @@ public interface EventMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
-    @Mapping(target = "state", expression = "java(State.PENDING)")
+    @Mapping(target = "state", expression = "java(EventState.PENDING)")
     @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
     Event toEvent(NewEventDto newEventDto, Long initiatorId, Long categoryId);
 
