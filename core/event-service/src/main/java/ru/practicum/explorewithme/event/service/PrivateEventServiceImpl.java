@@ -63,7 +63,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Event newEvent = eventMapper.toEvent(newEventDto, userShortDto.getId(), categoryDto.getId());
 
-        eventRepository.save(newEvent);
+        newEvent = eventRepository.saveAndFlush(newEvent);
 
         log.info("Событие c ID {} создано пользователем с ID {}.", newEvent.getId(), userId);
 
