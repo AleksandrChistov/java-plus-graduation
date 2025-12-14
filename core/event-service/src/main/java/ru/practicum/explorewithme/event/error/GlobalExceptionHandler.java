@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.explorewithme.error.ApiError;
-import ru.practicum.explorewithme.error.exception.BadRequestException;
-import ru.practicum.explorewithme.error.exception.NotFoundException;
-import ru.practicum.explorewithme.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.event.error.exception.BadRequestException;
+import ru.practicum.explorewithme.event.error.exception.NotFoundException;
+import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
