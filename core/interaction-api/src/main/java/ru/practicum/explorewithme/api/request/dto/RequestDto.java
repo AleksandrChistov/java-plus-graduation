@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.request.dto;
+package ru.practicum.explorewithme.api.request.dto;
 
 import lombok.*;
 

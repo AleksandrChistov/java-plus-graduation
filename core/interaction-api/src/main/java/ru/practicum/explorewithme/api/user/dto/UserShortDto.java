@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.category.dto;
+package ru.practicum.explorewithme.api.user.dto;
 
 import lombok.*;
 
@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseCategoryDto {
+public class UserShortDto {
     private Long id;
     private String name;
 }
