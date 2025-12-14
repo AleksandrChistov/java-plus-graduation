@@ -12,7 +12,7 @@ import java.util.Set;
 
 public interface AdminRequestServiceApi {
 
-    @GetMapping(path = "/admin/users/{userId}/events/requests", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/admin/events/requests", produces = MediaType.APPLICATION_JSON_VALUE)
     Map<Long, Long> getRequestsCountsByStatusAndEventIds(
             @NotNull @RequestParam RequestStatus status,
             @NotNull @RequestParam Set<@Positive Long> eventIds
