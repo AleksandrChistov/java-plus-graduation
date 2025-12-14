@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import ru.practicum.explorewithme.api.event.dto.LocationDto;
 
 import java.time.LocalDateTime;
 

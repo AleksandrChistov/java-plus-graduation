@@ -1,7 +1,7 @@
 package ru.practicum.explorewithme.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 

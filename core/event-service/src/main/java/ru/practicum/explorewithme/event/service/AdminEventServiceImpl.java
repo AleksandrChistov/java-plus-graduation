@@ -20,9 +20,9 @@ import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
@@ -86,15 +86,15 @@ public class AdminEventServiceImpl implements AdminEventService {
         }
 
         if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT.name())) {
-            if (Objects.equals(event.getState(), State.PUBLISHED)) {
+            if (Objects.equals(event.getState(), EventState.PUBLISHED)) {
                 throw new RuleViolationException("Событие нельзя отклонить, если оно опубликовано (PUBLISHED)");
             }
-            event.setState(State.CANCELED);
+            event.setState(EventState.CANCELED);
         } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT.name())) {
-            if (!Objects.equals(event.getState(), State.PENDING)) {
+            if (!Objects.equals(event.getState(), EventState.PENDING)) {
                 throw new RuleViolationException("Событие должно находиться в статусе PENDING");
             }
-            event.setState(State.PUBLISHED);
+            event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
         }
 

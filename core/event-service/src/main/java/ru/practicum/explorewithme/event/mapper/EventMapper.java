@@ -4,17 +4,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.model.Event;
 
 import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring",
         uses = {LocationMapper.class},
-        imports = {State.class, LocalDateTime.class})
+        imports = {EventState.class, LocalDateTime.class})
 public interface EventMapper {
 
     @Mapping(target = "id", ignore = true)

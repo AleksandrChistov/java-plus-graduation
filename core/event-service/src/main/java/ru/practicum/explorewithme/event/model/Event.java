@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 
 import java.time.LocalDateTime;
 
@@ -66,7 +66,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
-    private State state;
+    private EventState state;
 
     @NotBlank
     @Size(max = 120, min = 3)

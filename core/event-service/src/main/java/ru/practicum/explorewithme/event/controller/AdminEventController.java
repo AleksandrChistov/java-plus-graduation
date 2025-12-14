@@ -9,9 +9,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.service.AdminEventService;
 
 import java.time.LocalDateTime;
@@ -39,7 +39,7 @@ public class AdminEventController {
     @GetMapping
     public Collection<EventFullDto> getAllByParams(
             @RequestParam(required = false) List<Long> users,
-            @RequestParam(required = false) List<State> states,
+            @RequestParam(required = false) List<EventState> states,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,

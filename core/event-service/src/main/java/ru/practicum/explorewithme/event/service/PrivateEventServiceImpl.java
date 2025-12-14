@@ -17,11 +17,11 @@ import ru.practicum.explorewithme.event.client.category.CategoryClient;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
@@ -82,7 +82,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
         }
 
-        if (event.getState() != State.PENDING && event.getState() != State.CANCELED) {
+        if (event.getState() != EventState.PENDING && event.getState() != EventState.CANCELED) {
             log.error("Невозможно обновить событие с ID {}: неверный статус события", eventId);
             throw new RuleViolationException("Изменить можно только события в статусах PENDING и CANCELED");
         }
@@ -133,9 +133,9 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
 
         if (Objects.equals(updateEventRequest.getStateAction(), StateAction.CANCEL_REVIEW.name())) {
-            event.setState(State.CANCELED);
+            event.setState(EventState.CANCELED);
         } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.SEND_TO_REVIEW.name())) {
-            event.setState(State.PENDING);
+            event.setState(EventState.PENDING);
         }
 
         eventRepository.save(event);

@@ -7,7 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.service.EventServiceApi;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
@@ -16,15 +17,14 @@ import ru.practicum.explorewithme.event.service.PrivateEventService;
 import java.util.Collection;
 
 @RestController
-@RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-public class PrivateEventController {
+public class PrivateEventController implements EventServiceApi {
 
     private final PrivateEventService privateEventService;
 
-    @PostMapping
+    @PostMapping(path = EventServiceApi.URL)
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto create(
             @PathVariable @Positive Long userId,
@@ -34,7 +34,7 @@ public class PrivateEventController {
         return privateEventService.create(userId, newEventDto);
     }
 
-    @PatchMapping("/{eventId}")
+    @PatchMapping(path = EventServiceApi.URL + "/{eventId}")
     public EventFullDto update(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId,
@@ -44,7 +44,7 @@ public class PrivateEventController {
         return privateEventService.update(userId, eventId, updateEventRequest);
     }
 
-    @GetMapping
+    @GetMapping(path = EventServiceApi.URL)
     public Collection<EventShortDto> getAll(
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") int from,
@@ -54,7 +54,7 @@ public class PrivateEventController {
         return privateEventService.getAll(userId, from, size);
     }
 
-    @GetMapping("/{eventId}")
+    @GetMapping(path = EventServiceApi.URL + "/{eventId}")
     public EventFullDto getById(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId

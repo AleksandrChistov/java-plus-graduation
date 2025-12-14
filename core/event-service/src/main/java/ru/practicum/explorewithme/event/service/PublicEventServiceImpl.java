@@ -22,10 +22,10 @@ import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
-import ru.practicum.explorewithme.event.enums.State;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
@@ -118,7 +118,7 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public EventFullDto getById(Long eventId, HttpServletRequest request) {
-        Event event = eventRepository.findByIdAndState(eventId, State.PUBLISHED)
+        Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено."));
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
