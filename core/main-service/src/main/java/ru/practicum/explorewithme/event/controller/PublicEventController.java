@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.enums.EventsSort;

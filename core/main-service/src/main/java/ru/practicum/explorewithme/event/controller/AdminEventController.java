@@ -9,7 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.service.AdminEventService;

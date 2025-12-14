@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.model.Category;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.enums.State;

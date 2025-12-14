@@ -18,7 +18,7 @@ import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.enums.State;

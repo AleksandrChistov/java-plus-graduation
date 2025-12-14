@@ -19,7 +19,7 @@ import ru.practicum.explorewithme.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
-import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.enums.StateAction;
