@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.dto;
+package ru.practicum.explorewithme.api.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
