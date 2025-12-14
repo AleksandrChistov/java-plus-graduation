@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.request.dto.RequestDto;
+import ru.practicum.explorewithme.api.request.dto.RequestDto;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdate;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdateResult;
 import ru.practicum.explorewithme.request.service.RequestService;

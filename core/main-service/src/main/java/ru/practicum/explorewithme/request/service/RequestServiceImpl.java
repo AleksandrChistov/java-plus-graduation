@@ -5,13 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.explorewithme.api.request.dto.RequestDto;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
-import ru.practicum.explorewithme.request.dto.RequestDto;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdate;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdateResult;
 import ru.practicum.explorewithme.request.enums.Status;
@@ -229,4 +229,3 @@ public class RequestServiceImpl implements RequestService {
     }
 
 }
-

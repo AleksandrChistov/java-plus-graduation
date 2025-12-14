@@ -4,11 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.request.model.Request;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
@@ -28,7 +30,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r.event.id, COUNT(r) " +
             "FROM Request r " +
-            "WHERE r.event.id IN :eventIds AND r.status = 'CONFIRMED' " +
+            "WHERE r.event.id IN :eventIds AND r.status = :status " +
             "GROUP BY r.event.id")
-    List<Object[]> getConfirmedRequestsByEventIds(@Param("eventIds") List<Long> eventIds);
+    List<Object[]> getRequestsCountsByStatusAndEventIds(@Param("status") RequestStatus status, @Param("eventIds") Set<Long> eventIds);
 }

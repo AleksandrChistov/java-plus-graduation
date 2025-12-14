@@ -1,7 +1,7 @@
 package ru.practicum.explorewithme.request.service;
 
 import jakarta.validation.Valid;
-import ru.practicum.explorewithme.request.dto.RequestDto;
+import ru.practicum.explorewithme.api.request.dto.RequestDto;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdate;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdateResult;
 
