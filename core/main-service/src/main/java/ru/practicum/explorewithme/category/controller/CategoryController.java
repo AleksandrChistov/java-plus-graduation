@@ -7,20 +7,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.category.service.CategoryServiceApi;
 import ru.practicum.explorewithme.category.service.CategoryService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @Validated
 @RequiredArgsConstructor
-@RequestMapping(path = "/categories", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CategoryController {
+public class CategoryController implements CategoryServiceApi {
 
     private final CategoryService categoryService;
 
-    @GetMapping
+    @GetMapping(path = CategoryServiceApi.URL, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<ResponseCategoryDto> getAll(
             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
@@ -29,10 +30,13 @@ public class CategoryController {
         return categoryService.getCategories(from, size);
     }
 
-    @GetMapping("/{catId}")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public ResponseCategoryDto getById(@Positive @PathVariable Long catId) {
-        return categoryService.getCategory(catId);
+        return categoryService.getById(catId);
     }
 
+    @Override
+    public List<ResponseCategoryDto> getAllByIds(Set<@Positive Long> ids) {
+        return categoryService.getAllByIds(ids);
+    }
 }

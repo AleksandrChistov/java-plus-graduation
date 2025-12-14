@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
 import ru.practicum.explorewithme.category.model.Category;
 

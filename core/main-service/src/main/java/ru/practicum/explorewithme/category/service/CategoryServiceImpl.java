@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
-import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +36,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ResponseCategoryDto getCategory(long catId) {
+    public ResponseCategoryDto getById(Long catId) {
         return categoryRepository.findById(catId)
                 .map(categoryMapper::toCategoryDto)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
+    }
+
+    @Override
+    public List<ResponseCategoryDto> getAllByIds(Set<Long> ids) {
+        return categoryRepository.findAllById(ids).stream()
+                .map(categoryMapper::toCategoryDto)
+                .toList();
     }
 
     /** === Admin endpoints accessible only for admins. === */
