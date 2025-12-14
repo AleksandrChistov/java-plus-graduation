@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsParams;
 import ru.practicum.StatsUtil;
 import ru.practicum.client.StatsClient;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.compilation.dao.CompilationRepository;
 import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
@@ -65,7 +66,7 @@ public class CompilationServiceImpl implements CompilationService {
                     .collect(Collectors.toList());
         }
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
         return compilations.stream()
                 .map(c -> {
@@ -88,7 +89,7 @@ public class CompilationServiceImpl implements CompilationService {
             return compilationMapper.toCompilationDto(compilation, Collections.emptySet());
         }
 
-        List<Long> eventIds = compilation.getEvents().stream().map(Event::getId).toList();
+        Set<Long> eventIds = compilation.getEvents().stream().map(Event::getId).collect(Collectors.toSet());
 
         Set<EventShortDto> eventShortDtos = getEventShortDtos(
                 compilation.getEvents(),
@@ -117,7 +118,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation saved = compilationRepository.save(newCompilation);
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
         Set<EventShortDto> eventShortDtos = getEventShortDtos(
                 events,
@@ -147,7 +148,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation updated = compilationRepository.save(fromDb);
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
         Set<EventShortDto> eventShortDtos = getEventShortDtos(
                 events,
@@ -170,11 +171,11 @@ public class CompilationServiceImpl implements CompilationService {
 
     /** === Private internal methods === */
 
-    private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
-        return StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
+    private Map<Long, Long> getConfirmedRequests(Set<Long> eventIds) {
+        return StatsUtil.getConfirmedRequestsMap(requestRepository.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds));
     }
 
-    private Map<Long, Long> getViews(List<Long> eventIds) {
+    private Map<Long, Long> getViews(Set<Long> eventIds) {
         StatsParams statsParams = StatsUtil.buildStatsParams(
                 eventIds.stream()
                         .map(id -> "/events/" + id)
