@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.request.dto;
 
 import lombok.*;
+import ru.practicum.explorewithme.api.request.dto.RequestDto;
 
 import java.util.List;
 
