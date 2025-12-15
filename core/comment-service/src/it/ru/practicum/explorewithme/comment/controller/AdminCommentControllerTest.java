@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AdminCommentControllerTest {
 
-    private MockMvc mvc;
+    private final MockMvc mvc;
 
     private final ObjectMapper objectMapper;
 
