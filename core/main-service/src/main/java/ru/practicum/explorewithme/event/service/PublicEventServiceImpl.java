@@ -20,7 +20,7 @@ import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;

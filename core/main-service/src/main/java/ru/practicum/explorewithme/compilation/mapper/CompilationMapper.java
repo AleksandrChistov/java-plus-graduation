@@ -8,7 +8,7 @@ import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 import ru.practicum.explorewithme.compilation.model.Compilation;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 
 import java.util.Set;

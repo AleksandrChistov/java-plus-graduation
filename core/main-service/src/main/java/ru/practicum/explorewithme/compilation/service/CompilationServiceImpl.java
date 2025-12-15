@@ -17,7 +17,7 @@ import ru.practicum.explorewithme.compilation.mapper.CompilationMapper;
 import ru.practicum.explorewithme.compilation.model.Compilation;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
