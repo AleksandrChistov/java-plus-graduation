@@ -41,7 +41,7 @@ public class RequestServiceImpl implements RequestService {
 
         UserDto userDto = getUserDtoOrThrow(userId);
 
-        EventFullDto eventDto = eventClient.getById(userId, eventId);
+        EventFullDto eventDto = eventClient.getByIdAndState(eventId, null);
 
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new RuleViolationException("Participation request already exists for user " + userId + " to event " + eventId);
@@ -108,7 +108,7 @@ public class RequestServiceImpl implements RequestService {
 
         getUserDtoOrThrow(userId);
 
-        EventFullDto eventDto = eventClient.getById(userId, eventId);
+        EventFullDto eventDto = eventClient.getByIdAndState(eventId, null);
 
         Status newStatus;
         try {
@@ -193,7 +193,7 @@ public class RequestServiceImpl implements RequestService {
 
         getUserDtoOrThrow(userId);
 
-        eventClient.getById(userId, eventId);
+        eventClient.getByIdAndState(eventId, null);
 
         List<Request> requests = requestRepository.findByEventId(eventId);
 
