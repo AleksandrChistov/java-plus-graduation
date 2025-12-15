@@ -8,8 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
-import ru.practicum.explorewithme.api.event.service.EventServiceApi;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.service.PrivateEventService;
@@ -17,14 +16,15 @@ import ru.practicum.explorewithme.event.service.PrivateEventService;
 import java.util.Collection;
 
 @RestController
+@RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-public class PrivateEventController implements EventServiceApi {
+public class PrivateEventController {
 
     private final PrivateEventService privateEventService;
 
-    @PostMapping(path = EventServiceApi.URL)
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto create(
             @PathVariable @Positive Long userId,
@@ -34,7 +34,7 @@ public class PrivateEventController implements EventServiceApi {
         return privateEventService.create(userId, newEventDto);
     }
 
-    @PatchMapping(path = EventServiceApi.URL + "/{eventId}")
+    @PatchMapping("/{eventId}")
     public EventFullDto update(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId,
@@ -44,7 +44,7 @@ public class PrivateEventController implements EventServiceApi {
         return privateEventService.update(userId, eventId, updateEventRequest);
     }
 
-    @GetMapping(path = EventServiceApi.URL)
+    @GetMapping
     public Collection<EventShortDto> getAll(
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") int from,
@@ -54,7 +54,7 @@ public class PrivateEventController implements EventServiceApi {
         return privateEventService.getAll(userId, from, size);
     }
 
-    @GetMapping(path = EventServiceApi.URL + "/{eventId}")
+    @GetMapping("/{eventId}")
     public EventFullDto getById(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId

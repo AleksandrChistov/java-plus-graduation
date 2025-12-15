@@ -14,7 +14,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     Page<Event> findByInitiatorIdOrderByEventDateDesc(Long initiatorId, Pageable pageable);
 
-    Optional<Event> findByIdAndState(Long id, EventState state);
+    Optional<Event> findByIdAndState(Long eventId, EventState state);
 
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 

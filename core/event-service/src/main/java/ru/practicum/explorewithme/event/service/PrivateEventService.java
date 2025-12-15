@@ -1,14 +1,13 @@
 package ru.practicum.explorewithme.event.service;
 
-import ru.practicum.explorewithme.api.event.service.EventServiceApi;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 
 import java.util.List;
 
-public interface PrivateEventService extends EventServiceApi {
+public interface PrivateEventService {
 
     EventFullDto create(Long userId, NewEventDto newEventDto);
 

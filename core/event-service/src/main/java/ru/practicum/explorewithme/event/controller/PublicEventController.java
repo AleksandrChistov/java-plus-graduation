@@ -1,29 +1,35 @@
 package ru.practicum.explorewithme.event.controller;
 
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.dto.EventShortDto;
+import ru.practicum.explorewithme.api.event.enums.EventState;
+import ru.practicum.explorewithme.api.event.service.EventServiceApi;
 import ru.practicum.explorewithme.event.dto.EventParams;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.enums.EventsSort;
 import ru.practicum.explorewithme.event.service.PublicEventService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @RestController
-@RequestMapping("/events")
+@Validated
 @RequiredArgsConstructor
-@Slf4j
-public class PublicEventController {
+public class PublicEventController implements EventServiceApi {
 
     private final PublicEventService publicEventService;
 
-    @GetMapping
+    @GetMapping(path = EventServiceApi.URL)
     public List<EventShortDto> getAllByParams(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) List<Long> categories,
@@ -47,17 +53,24 @@ public class PublicEventController {
                 .from(from)
                 .size(size)
                 .build();
-        log.info("Получение событий с параметрами: {}", params.toString());
         return publicEventService.getAllByParams(params, request);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(path = EventServiceApi.URL + "/{eventId}")
     public EventFullDto getById(
-            @PathVariable @Positive Long id,
+            @PathVariable @Positive Long eventId,
             HttpServletRequest request
     ) {
-        log.info("Получение события по ID {}", id);
-        return publicEventService.getById(id, request);
+        return publicEventService.getById(eventId, request);
     }
 
+    @Override
+    public EventFullDto getByIdAndState(Long eventId, @Nullable EventState state) {
+        return publicEventService.getByIdAndState(eventId, state);
+    }
+
+    @Override
+    public List<EventShortDto> getAllByIds(Set<@Positive Long> eventIds) {
+        return publicEventService.getAllByIds(eventIds);
+    }
 }
