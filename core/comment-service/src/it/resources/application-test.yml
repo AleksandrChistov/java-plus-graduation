@@ -1,0 +1,30 @@
+spring:
+  main:
+    banner-mode: off
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:explorewithme
+    username: explorewithme
+    password: explorewithme
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  cloud:
+    config:
+      enabled: false
+      discovery:
+        enabled: false
+      fail-fast: false
+
+eureka:
+  client:
+    enabled: false
+  instance:
+    enabled: false
+
+logging:
+  level:
+    org.springframework: DEBUG
+    ru.practicum: DEBUG
