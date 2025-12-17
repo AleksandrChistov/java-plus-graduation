@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.error;
+package ru.practicum.explorewithme.compilation.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

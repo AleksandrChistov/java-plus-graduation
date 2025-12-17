@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.error;
+package ru.practicum.explorewithme.compilation.error;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.explorewithme.error.exception.BadRequestException;
-import ru.practicum.explorewithme.error.exception.NotFoundException;
-import ru.practicum.explorewithme.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.compilation.error.exception.NotFoundException;
+import ru.practicum.explorewithme.compilation.error.exception.RuleViolationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -87,15 +86,6 @@ public class GlobalExceptionHandler {
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Argument type mismatch", timestamp, stackTrace);
-    }
-
-    @ExceptionHandler(BadRequestException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiError> handleBadRequest(final BadRequestException ex) {
-        log.warn("400 {}", ex.getMessage());
-        String stackTrace = getStackTrace(ex);
-        String timestamp = getCurrentTimestamp();
-        return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Bad request", timestamp, stackTrace);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

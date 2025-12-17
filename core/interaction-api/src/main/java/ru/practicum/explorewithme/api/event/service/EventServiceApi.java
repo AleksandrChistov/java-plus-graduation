@@ -21,6 +21,6 @@ public interface EventServiceApi {
     EventFullDto getByIdAndState(@PathVariable @Positive Long eventId, @RequestParam @Nullable EventState state);
 
     @GetMapping(path = URL + "/by-ids", produces = MediaType.APPLICATION_JSON_VALUE)
-    List<EventShortDto> getAllByIds(@NotNull Set<@Positive Long> eventIds);
+    List<EventShortDto> getAllByIds(@RequestParam @NotNull Set<@Positive Long> eventIds);
 
 }

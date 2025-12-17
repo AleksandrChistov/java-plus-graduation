@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.explorewithme.event.model.Event;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,14 +26,14 @@ public class Compilation {
     @Column(name = "title", length = 50, nullable = false, unique = true)
     private String title;
 
-    @ManyToMany
-    @JoinTable(
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
             name = "compilation_events",
-            joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
+            joinColumns = @JoinColumn(name = "compilation_id")
     )
+    @Column(name = "event_id", nullable = false)
     @ToString.Exclude
-    private Set<Event> events = new HashSet<>();
+    private Set<Long> eventIds = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
