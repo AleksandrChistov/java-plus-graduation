@@ -117,8 +117,6 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      ewm-db:
-        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
@@ -154,8 +152,6 @@ services:
       discovery-server:
         condition: service_healthy
       config-server:
-        condition: service_healthy
-      ewm-db:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://category-db:5432/explorewithme
@@ -193,8 +189,6 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      ewm-db:
-        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://event-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
@@ -230,8 +224,6 @@ services:
       discovery-server:
         condition: service_healthy
       config-server:
-        condition: service_healthy
-      ewm-db:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://request-db:5432/explorewithme
@@ -269,8 +261,6 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      ewm-db:
-        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comment-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
@@ -298,37 +288,34 @@ services:
     networks:
       - microservice-net
 
-  ewm-service:
-    build: core/main-service
-    image: main-service
-    container_name: main-service
+  compilation-service:
+    build: core/compilation-service
+    image: compilation-service
+    container_name: compilation-service
     depends_on:
       discovery-server:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      ewm-db:
-        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://compilation-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - STATS_SERVER_URL=http://stats-server:9090
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
 
-  ewm-db:
+  compilation-db:
     image: postgres:16.1
     ports:
-      - "6542:5432"
+      - "6548:5432"
     environment:
       - POSTGRES_PASSWORD=explorewithme
       - POSTGRES_USER=explorewithme
       - POSTGRES_DB=explorewithme
     volumes:
-      - ./core/main-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./core/compilation-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
