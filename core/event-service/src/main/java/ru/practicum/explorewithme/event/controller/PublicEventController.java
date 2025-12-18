@@ -65,12 +65,12 @@ public class PublicEventController implements EventServiceApi {
     }
 
     @Override
-    public EventFullDto getByIdAndState(Long eventId, @Nullable EventState state) {
+    public EventFullDto getByIdAndState(Long eventId, EventState state) {
         return publicEventService.getByIdAndState(eventId, state);
     }
 
     @Override
-    public List<EventShortDto> getAllByIds(Set<@Positive Long> eventIds) {
+    public List<EventShortDto> getAllByIds(Set<Long> eventIds) {
         return publicEventService.getAllByIds(eventIds);
     }
 }

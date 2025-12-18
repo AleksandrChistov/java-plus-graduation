@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PublicCommentServiceImpl implements PublicCommentService {
     private final CommentRepository commentRepository;
@@ -29,6 +31,7 @@ public class PublicCommentServiceImpl implements PublicCommentService {
 
     @Override
     public List<ResponseCommentDto> getCommentsByEventId(Long eventId, int from, int size) {
+        log.info("Получение комментариев для события с id {}, from {}, size {}", eventId, from, size);
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
 
         EventFullDto eventDto = eventClient.getByIdAndState(eventId, null);
@@ -44,6 +47,7 @@ public class PublicCommentServiceImpl implements PublicCommentService {
 
     @Override
     public List<ResponseCommentDto> getAllCommentsByEventIds(List<Long> eventIds, int from, int size) {
+        log.info("Получение комментариев для событий с id {}, from {}, size {}", eventIds, from, size);
         if (eventIds == null || eventIds.isEmpty()) {
             throw new IllegalArgumentException("Список eventIds не может быть пустым");
         }

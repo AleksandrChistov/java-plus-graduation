@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
-import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.request.model.Request;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.Set;
 public interface RequestRepository extends JpaRepository<Request, Long> {
     boolean existsByRequesterIdAndEventId(Long requesterId, Long eventId);
 
-    long countByEventIdAndStatus(Long eventId, Status status);
+    long countByEventIdAndStatus(Long eventId, RequestStatus status);
 
     List<Request> findByRequesterId(Long requesterId);
 
@@ -24,7 +23,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     Optional<Request> findByIdAndRequesterId(Long id, Long requesterId);
 
-    List<Request> findByEventIdAndStatus(Long eventId, Status status);
+    List<Request> findByEventIdAndStatus(Long eventId, RequestStatus status);
 
     Optional<Request> findByIdAndEventId(Long id, Long eventId);
 

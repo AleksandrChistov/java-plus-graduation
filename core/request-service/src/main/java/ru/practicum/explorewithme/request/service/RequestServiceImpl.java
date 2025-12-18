@@ -14,7 +14,7 @@ import ru.practicum.explorewithme.request.client.user.UserClient;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdate;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdateResult;
-import ru.practicum.explorewithme.request.enums.Status;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.request.error.exception.NotFoundException;
 import ru.practicum.explorewithme.request.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.request.mapper.RequestMapper;
@@ -56,7 +56,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         if (eventDto.getParticipantLimit() > 0) {
-            long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+            long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
             if (confirmedRequests >= eventDto.getParticipantLimit()) {
                 throw new RuleViolationException("Participant limit reached for event");
             }
@@ -67,9 +67,9 @@ public class RequestServiceImpl implements RequestService {
         request.setRequesterId(userDto.getId());
 
         if (eventDto.getParticipantLimit() == 0 || (eventDto.getRequestModeration() != null && !eventDto.getRequestModeration())) {
-            request.setStatus(Status.CONFIRMED);
+            request.setStatus(RequestStatus.CONFIRMED);
         } else {
-            request.setStatus(Status.PENDING);
+            request.setStatus(RequestStatus.PENDING);
         }
 
         Request savedRequest = requestRepository.save(request);
@@ -90,11 +90,11 @@ public class RequestServiceImpl implements RequestService {
         Request request = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
-        if (request.getStatus() != Status.PENDING && request.getStatus() != Status.CONFIRMED) {
+        if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.CONFIRMED) {
             throw new RuleViolationException("Only pending or confirmed requests can be cancelled");
         }
 
-        request.setStatus(Status.CANCELED);
+        request.setStatus(RequestStatus.CANCELED);
 
         Request cancelledRequest = requestRepository.save(request);
 
@@ -110,14 +110,14 @@ public class RequestServiceImpl implements RequestService {
 
         EventFullDto eventDto = eventClient.getByIdAndState(eventId, null);
 
-        Status newStatus;
+        RequestStatus newStatus;
         try {
-            newStatus = Status.valueOf(updateRequest.getStatus());
+            newStatus = RequestStatus.valueOf(updateRequest.getStatus());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status: " + updateRequest.getStatus());
         }
 
-        if (newStatus != Status.CONFIRMED && newStatus != Status.REJECTED) {
+        if (newStatus != RequestStatus.CONFIRMED && newStatus != RequestStatus.REJECTED) {
             throw new IllegalArgumentException("New status must be CONFIRMED or REJECTED");
         }
 
@@ -125,7 +125,7 @@ public class RequestServiceImpl implements RequestService {
             throw new RuleViolationException("Event does not require request moderation");
         }
 
-        long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
         List<Request> requestsToUpdate = requestRepository.findAllById(updateRequest.getRequestIds());
 
@@ -133,12 +133,12 @@ public class RequestServiceImpl implements RequestService {
             if (!request.getEventId().equals(eventId)) {
                 throw new IllegalArgumentException("Request " + request.getId() + " does not belong to eventDto " + eventId);
             }
-            if (request.getStatus() != Status.PENDING) {
+            if (request.getStatus() != RequestStatus.PENDING) {
                 throw new RuleViolationException("Request " + request.getId() + " must have status PENDING");
             }
         }
 
-        if (newStatus == Status.CONFIRMED) {
+        if (newStatus == RequestStatus.CONFIRMED) {
             if (confirmedCount + requestsToUpdate.size() > eventDto.getParticipantLimit()) {
                 throw new RuleViolationException("The participant limit has been reached");
             }
@@ -149,7 +149,7 @@ public class RequestServiceImpl implements RequestService {
 
         for (Request request : requestsToUpdate) {
             request.setStatus(newStatus);
-            if (newStatus == Status.CONFIRMED) {
+            if (newStatus == RequestStatus.CONFIRMED) {
                 confirmedRequests.add(request);
             } else {
                 rejectedRequests.add(request);
@@ -158,13 +158,13 @@ public class RequestServiceImpl implements RequestService {
 
         requestRepository.saveAll(requestsToUpdate);
 
-        if (newStatus == Status.CONFIRMED && confirmedCount + confirmedRequests.size() >= eventDto.getParticipantLimit()) {
-            List<Request> pendingRequests = requestRepository.findByEventIdAndStatus(eventId, Status.PENDING);
+        if (newStatus == RequestStatus.CONFIRMED && confirmedCount + confirmedRequests.size() >= eventDto.getParticipantLimit()) {
+            List<Request> pendingRequests = requestRepository.findByEventIdAndStatus(eventId, RequestStatus.PENDING);
 
             List<Request> autoRejected = new ArrayList<>();
             for (Request pendingRequest : pendingRequests) {
                 if (!updateRequest.getRequestIds().contains(pendingRequest.getId())) {
-                    pendingRequest.setStatus(Status.REJECTED);
+                    pendingRequest.setStatus(RequestStatus.REJECTED);
                     autoRejected.add(pendingRequest);
                     rejectedRequests.add(pendingRequest);
                 }

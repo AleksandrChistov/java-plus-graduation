@@ -54,7 +54,6 @@ services:
     environment:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
-      - SERVER_PORT=8080
     healthcheck:
       test: >
         bash -c '

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.explorewithme.request.enums.Status;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +29,7 @@ public class Request {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Status status;
+    private RequestStatus status;
 
     @Override
     public boolean equals(Object o) {

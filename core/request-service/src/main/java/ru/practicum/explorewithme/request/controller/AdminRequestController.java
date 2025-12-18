@@ -1,6 +1,5 @@
 package ru.practicum.explorewithme.request.controller;
 
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +17,7 @@ public class AdminRequestController implements AdminRequestServiceApi {
     private final AdminRequestService adminRequestService;
 
     @Override
-    public Map<Long, Long> getRequestsCountsByStatusAndEventIds(RequestStatus status, Set<@Positive Long> eventIds) {
+    public Map<Long, Long> getRequestsCountsByStatusAndEventIds(RequestStatus status, Set<Long> eventIds) {
         return adminRequestService.getRequestsCountsByStatusAndEventIds(status, eventIds);
     }
 }

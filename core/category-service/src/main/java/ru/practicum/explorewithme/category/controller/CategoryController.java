@@ -31,12 +31,12 @@ public class CategoryController implements CategoryServiceApi {
     }
 
     @Override
-    public ResponseCategoryDto getById(@Positive @PathVariable Long catId) {
+    public ResponseCategoryDto getById(Long catId) {
         return categoryService.getById(catId);
     }
 
     @Override
-    public List<ResponseCategoryDto> getAllByIds(Set<@Positive Long> ids) {
+    public List<ResponseCategoryDto> getAllByIds(Set<Long> ids) {
         return categoryService.getAllByIds(ids);
     }
 }
