@@ -1,7 +1,6 @@
 package ru.practicum.explorewithme.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +27,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
         "spring.config.location=classpath:application-test.yml"
@@ -221,11 +219,8 @@ public class AdminCommentControllerTest {
         em.persist(comment2);
         em.flush();
 
-        stubFor(WireMock.get(urlEqualTo("/events/1"))
-                .willReturn(okJson(objectMapper.writeValueAsString(EventFullDto.builder()
-                        .id(1L)
-                        .title("Test Event 1")
-                        .build()))));
+        when(eventClient.getByIdAndState(1L, null))
+                .thenReturn(EventFullDto.builder().id(1L).title("Test Event 1").build());
 
         MvcResult result = mvc.perform(get(AdminCommentController.URL + "/{eventId}/comments", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -265,11 +260,8 @@ public class AdminCommentControllerTest {
         em.persist(comment2);
         em.flush();
 
-        stubFor(WireMock.get(urlEqualTo("/events/2"))
-                .willReturn(okJson(objectMapper.writeValueAsString(EventFullDto.builder()
-                        .id(2L)
-                        .title("Test Event 2")
-                        .build()))));
+        when(eventClient.getByIdAndState(2L, null))
+                .thenReturn(EventFullDto.builder().id(2L).title("Test Event 2").build());
 
         MvcResult result = mvc.perform(get(AdminCommentController.URL + "/{eventId}/comments", 2L)
                         .param("status", Status.PUBLISHED.name())

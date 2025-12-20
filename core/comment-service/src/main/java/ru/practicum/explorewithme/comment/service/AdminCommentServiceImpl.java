@@ -55,7 +55,11 @@ public class AdminCommentServiceImpl implements AdminCommentService {
     public List<ResponseCommentDto> getByEventId(long eventId, Status status) {
         log.info("Get comments by eventId={} with status={}", eventId, status);
 
-        eventClient.getByIdAndState(eventId, EventState.PUBLISHED);
+        try {
+            eventClient.getByIdAndState(eventId, EventState.PUBLISHED);
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Published event with id=" + eventId + " was not found");
+        }
 
         List<Comment> comments;
 
