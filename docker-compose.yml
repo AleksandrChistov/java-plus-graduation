@@ -18,8 +18,6 @@ services:
     build: infra/config-server
     image: config-server
     container_name: config-server
-    ports:
-      - "8888:8888"
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -71,8 +69,6 @@ services:
     build: stats/stats-server
     image: stats-server
     container_name: stats-server
-    ports:
-      - "9090:9090"
     depends_on:
       discovery-server:
         condition: service_healthy
