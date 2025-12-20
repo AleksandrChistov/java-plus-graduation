@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.model.Event;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,5 +20,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     Set<Event> findAllByIdIn(Set<Long> ids);
+
+    List<Event> findAllByCategoryIdIn(Set<Long> categoryIds);
+
 }
 

@@ -153,7 +153,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     }
 
     @Override
-    public EventFullDto getByIdAndState(Long eventId, @Nullable EventState state) {
+    public EventFullDto getByIdAndState(Long eventId, EventState state) {
         log.debug("Получен запрос на получение события с ID = {} и state = {}", eventId, state);
 
         Event event;
@@ -191,7 +191,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     }
 
     @Override
-    public List<EventShortDto> getAllByIds(Set<@Positive Long> eventIds) {
+    public List<EventShortDto> getAllByIds(Set<Long> eventIds) {
         log.debug("Получен запрос на получение событий с IDs = {}", eventIds);
         List<Event> events = eventRepository.findAllById(eventIds);
 
@@ -238,6 +238,13 @@ public class PublicEventServiceImpl implements PublicEventService {
         log.info("Метод вернул {} событий.", result.size());
 
         return result;
+    }
+
+    @Override
+    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
+        log.debug("Получен запрос на проверку привязки категорий с categoryIds = {}", categoryIds);
+        List<Event> events = eventRepository.findAllByCategoryIdIn(categoryIds);
+        return events.size() > 0;
     }
 
     private void buildStatsDtoAndHit(HttpServletRequest request) {

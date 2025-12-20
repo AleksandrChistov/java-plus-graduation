@@ -18,7 +18,7 @@ public class EventSpecifications {
             List<Predicate> predicates = new ArrayList<>();
 
             if (adminEventDto.getUsers() != null) {
-                predicates.add(root.get("initiator").get("id").in(adminEventDto.getUsers()));
+                predicates.add(root.get("initiatorId").in(adminEventDto.getUsers()));
             }
 
             if (adminEventDto.getStates() != null) {
@@ -26,7 +26,7 @@ public class EventSpecifications {
             }
 
             if (adminEventDto.getCategories() != null) {
-                predicates.add(root.get("category").get("id").in(adminEventDto.getCategories()));
+                predicates.add(root.get("categoryId").in(adminEventDto.getCategories()));
             }
 
             if (adminEventDto.getRangeStart() != null) {
@@ -53,7 +53,7 @@ public class EventSpecifications {
             }
 
             if (params.getCategories() != null) {
-                predicates.add(root.get("category_id").in(params.getCategories()));
+                predicates.add(root.get("categoryId").in(params.getCategories()));
             }
 
             if (params.getPaid() != null) {

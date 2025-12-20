@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.request.client.event;
+package ru.practicum.explorewithme.category.client.event;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Positive;
@@ -17,7 +17,7 @@ import java.util.Set;
 public class EventClientFallback implements EventServiceApi {
 
     @Override
-    public EventFullDto getByIdAndState(Long eventId, EventState state) {
+    public EventFullDto getByIdAndState(Long eventId, @Nullable EventState state) {
         log.warn("Сервис Event недоступен, fallback вернул null для eventId: {} и state: {}", eventId, state);
         return null;
     }

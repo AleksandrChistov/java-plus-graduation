@@ -17,10 +17,13 @@ import java.util.Set;
 public interface EventServiceApi {
     String URL = "/events";
 
-    @GetMapping(path = URL + "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = URL + "/{eventId}/filters", produces = MediaType.APPLICATION_JSON_VALUE)
     EventFullDto getByIdAndState(@PathVariable @Positive Long eventId, @RequestParam @Nullable EventState state);
 
     @GetMapping(path = URL + "/by-ids", produces = MediaType.APPLICATION_JSON_VALUE)
     List<EventShortDto> getAllByIds(@RequestParam @NotNull Set<@Positive Long> eventIds);
+
+    @GetMapping(path = URL + "/check-categories", produces = MediaType.APPLICATION_JSON_VALUE)
+    boolean isCategoriesLinked(@RequestParam @Nullable Set<@Positive Long> categoryIds);
 
 }

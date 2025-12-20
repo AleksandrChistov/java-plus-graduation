@@ -49,7 +49,7 @@ spring:
         - id: request_service_private
           uri: lb://request-service
           predicates:
-            - Path=/users/*/requests, /users/*/requests/**, /events/*/requests, /events/*/requests/**
+            - Path=/users/*/requests, /users/*/requests/**, /users/*/events/*/requests, /users/*/events/*/requests/**
 
         # События
         - id: event_service_admin

@@ -1,5 +1,6 @@
 package ru.practicum.explorewithme.compilation.client.event;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,4 +27,11 @@ public class EventClientFallback implements EventServiceApi {
         log.warn("Сервис Event недоступен, fallback вернул пустой список для eventIds: {}", eventIds);
         return List.of();
     }
+
+    @Override
+    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
+        log.warn("Сервис Event недоступен, fallback вернул isCategoriesLinked = true для categoryIds: {}", categoryIds);
+        return true;
+    }
+
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.explorewithme.category.error.exception.NotFoundException;
+import ru.practicum.explorewithme.category.error.exception.RuleViolationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,6 +35,15 @@ public class GlobalExceptionHandler {
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), "Data conflict", timestamp, stackTrace);
+    }
+
+    @ExceptionHandler(RuleViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ApiError> handleRuleViolation(final RuleViolationException ex) {
+        log.warn("409 Conflict: {}", ex.getMessage());
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), "For the requested operation the conditions are not met.", timestamp, stackTrace);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

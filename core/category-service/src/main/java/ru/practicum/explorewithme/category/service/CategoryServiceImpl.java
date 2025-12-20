@@ -6,9 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.category.client.event.EventClient;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
 import ru.practicum.explorewithme.category.error.exception.NotFoundException;
+import ru.practicum.explorewithme.category.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.model.Category;
 
@@ -23,6 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     private final CategoryMapper categoryMapper;
+
+    private final EventClient eventClient;
 
     /** === Public endpoints accessible to all users. === */
 
@@ -80,6 +84,11 @@ public class CategoryServiceImpl implements CategoryService {
         if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Category with id=" + catId + " was not found");
         }
+
+        if (eventClient.isCategoriesLinked(Set.of(catId))) {
+            throw new RuleViolationException("Category is linked to events");
+        }
+
         categoryRepository.deleteById(catId);
     }
 

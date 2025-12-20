@@ -17,6 +17,6 @@ public interface CategoryServiceApi {
     @GetMapping(path = URL + "/by-ids", produces = MediaType.APPLICATION_JSON_VALUE)
     List<ResponseCategoryDto> getAllByIds(@NotNull @RequestParam Set<@Positive Long> ids);
 
-    @GetMapping(value = "/{catId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = URL + "/{catId}", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseCategoryDto getById(@Positive @PathVariable Long catId);
 }

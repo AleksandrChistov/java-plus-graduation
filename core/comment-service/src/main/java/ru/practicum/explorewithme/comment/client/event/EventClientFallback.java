@@ -28,4 +28,10 @@ public class EventClientFallback implements EventServiceApi {
         return List.of();
     }
 
+    @Override
+    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
+        log.warn("Сервис Event недоступен, fallback вернул isCategoriesLinked = true для categoryIds: {}", categoryIds);
+        return true;
+    }
+
 }
