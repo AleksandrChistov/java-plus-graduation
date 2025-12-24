@@ -2,6 +2,10 @@ server:
   port: 0
 
 spring:
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:6546/explorewithme
@@ -26,3 +30,14 @@ logging.level.org.springframework:
   transaction.interceptor: DEBUG
 
 logging.level.ru.practicum.explorewithme: TRACE
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000 # 10 секунд в миллисекундах
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: COUNT_BASED
+      minimumNumberOfCalls: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true

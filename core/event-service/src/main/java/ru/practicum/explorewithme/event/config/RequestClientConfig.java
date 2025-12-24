@@ -1,24 +1,17 @@
 package ru.practicum.explorewithme.event.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.Feign;
-import lombok.RequiredArgsConstructor;
+import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.practicum.explorewithme.event.client.request.RequestClientErrorDecoder;
 
 @Configuration
-@RequiredArgsConstructor
 public class RequestClientConfig {
-
-    private final ObjectMapper objectMapper;
-
     @Bean
-    public Feign.Builder feignRequestBuilder() {
-        return Feign.builder()
-                .errorDecoder(new RequestClientErrorDecoder(objectMapper));
+    public ErrorDecoder requestErrorDecoder(ObjectMapper objectMapper) {
+        return new RequestClientErrorDecoder(objectMapper);
     }
-
 }
 
 

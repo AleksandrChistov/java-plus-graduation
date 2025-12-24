@@ -7,19 +7,19 @@ import org.springframework.stereotype.Component;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
-import ru.practicum.explorewithme.api.event.service.EventServiceApi;
+import ru.practicum.explorewithme.request.error.exception.ServiceUnavailableException;
 
 import java.util.List;
 import java.util.Set;
 
 @Slf4j
 @Component
-public class EventClientFallback implements EventServiceApi {
+public class EventClientFallback implements EventClient {
 
     @Override
     public EventFullDto getByIdAndState(Long eventId, EventState state) {
-        log.warn("Сервис Event недоступен, fallback вернул null для eventId: {} и state: {}", eventId, state);
-        return null;
+        log.warn("Сервис Event недоступен, fallback кинул ServiceUnavailableException для eventId: {} и state: {}", eventId, state);
+        throw new ServiceUnavailableException("Сервис Event недоступен");
     }
 
     @Override
@@ -30,8 +30,8 @@ public class EventClientFallback implements EventServiceApi {
 
     @Override
     public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
-        log.warn("Сервис Event недоступен, fallback вернул isCategoriesLinked = true для categoryIds: {}", categoryIds);
-        return true;
+        log.warn("Сервис Event недоступен, fallback кинул ServiceUnavailableException для categoryIds: {}", categoryIds);
+        throw new ServiceUnavailableException("Сервис Event недоступен");
     }
 
 }

@@ -17,6 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.event.error.exception.ServiceUnavailableException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -129,6 +130,14 @@ public class GlobalExceptionHandler {
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), "Internal server error", timestamp, stackTrace);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleServiceUnavailableException(final ServiceUnavailableException ex) {
+        log.error("503 {}", ex.getMessage(), ex);
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), "Service temporally unavailable. Please ping support", timestamp, stackTrace);
     }
 
     private ResponseEntity<ApiError> getResponseEntity(HttpStatus httpStatus, String reason, String message, String timestamp, String stackTrace) {

@@ -26,11 +26,7 @@ services:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
       - SERVER_PORT=8888
     healthcheck:
-      test: >
-        bash -c '
-          curl -f http://localhost:8888/actuator/health ||
-          (echo "Health check failed" && exit 1)
-        '
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 15
@@ -50,14 +46,9 @@ services:
       config-server:
         condition: service_healthy
     environment:
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     healthcheck:
-      test: >
-        bash -c '
-          curl -f http://localhost:8080/actuator/health ||
-          (echo "Health check failed" && exit 1)
-        '
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 15
@@ -80,7 +71,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -112,11 +102,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      user-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -148,11 +139,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      category-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://category-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -184,11 +176,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      event-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://event-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -220,11 +213,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      request-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://request-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -256,11 +250,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      comment-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comment-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -292,11 +287,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      compilation-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://compilation-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net

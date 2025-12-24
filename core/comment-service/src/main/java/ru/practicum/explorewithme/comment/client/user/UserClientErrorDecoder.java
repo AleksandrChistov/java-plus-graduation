@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import ru.practicum.explorewithme.comment.error.ApiError;
 import ru.practicum.explorewithme.comment.error.exception.NotFoundException;
+import ru.practicum.explorewithme.comment.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.comment.error.exception.ServiceUnavailableException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +35,14 @@ public class UserClientErrorDecoder implements ErrorDecoder {
             if (response.status() == 404) {
                 ApiError error = parseErrorBody(response);
                 return new NotFoundException(error.getMessage());
+            }
+            if (response.status() == 409) {
+                ApiError error = parseErrorBody(response);
+                return new RuleViolationException(error.getMessage());
+            }
+            if (response.status() == 503) {
+                ApiError error = parseErrorBody(response);
+                return new ServiceUnavailableException(error.getMessage());
             }
         } catch (Exception e) {
             log.warn("Сломался в UserClientErrorDecoder, methodKey {}", methodKey, e);
