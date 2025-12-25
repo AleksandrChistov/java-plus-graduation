@@ -22,17 +22,16 @@ import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
-import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,14 +40,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PrivateEventServiceImpl implements PrivateEventService {
 
+    private final EventRepository eventRepository;
+
     private final UserClient userClient;
     private final CategoryClient categoryClient;
     private final RequestClient requestClient;
-    private final EventRepository eventRepository;
     private final StatsClient statsClient;
-    private final EventMapper eventMapper;
-    private final LocationMapper locationMapper;
 
+    private final EventMapper eventMapper;
     private final UserMapper userMapper;
 
     @Override
@@ -77,7 +76,31 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
-        if (!Objects.equals(userShortDto.getId(), event.getInitiatorId())) {
+        validateCriticalRules(event, userShortDto.getId(), updateEventRequest);
+
+        ResponseCategoryDto categoryDto = categoryClient.getById(updateEventRequest.getCategory() != null ? updateEventRequest.getCategory() : event.getCategoryId());
+
+        eventMapper.updateEvent(event, updateEventRequest, userShortDto.getId());
+
+        eventRepository.save(event);
+
+        log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
+
+        Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
+
+        if (event.getPublishedOn() == null) {
+            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
+        }
+
+        Long views = getStatsViews(event);
+
+        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+    }
+
+    private static void validateCriticalRules(Event event, Long userId, UpdateEventRequest updateEventRequest) {
+        Long eventId = event.getId();
+
+        if (!Objects.equals(userId, event.getInitiatorId())) {
             log.error("Пользователь с ID {} пытается обновить чужое событие с ID {}", userId, eventId);
             throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
         }
@@ -93,72 +116,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
                     "часа от текущего момента");
         }
-
-        ResponseCategoryDto categoryDto = categoryClient.getById(updateEventRequest.getCategory() != null ? updateEventRequest.getCategory() : event.getCategoryId());
-
-        if (updateEventRequest.getCategory() != null) {
-            event.setCategoryId(categoryDto.getId());
-        }
-
-        if (updateEventRequest.getTitle() != null) {
-            event.setTitle(updateEventRequest.getTitle());
-        }
-
-        if (updateEventRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventRequest.getAnnotation());
-        }
-
-        if (updateEventRequest.getDescription() != null) {
-            event.setDescription(updateEventRequest.getDescription());
-        }
-
-        if (updateEventRequest.getLocation() != null) {
-            event.setLocation(locationMapper.toEntity(updateEventRequest.getLocation()));
-        }
-
-        if (updateEventRequest.getPaid() != null) {
-            event.setPaid(updateEventRequest.getPaid());
-        }
-
-        if (updateEventRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventRequest.getParticipantLimit());
-        }
-
-        if (updateEventRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventRequest.getRequestModeration());
-        }
-
-        if (updateEventRequest.getEventDate() != null) {
-            event.setEventDate(updateEventRequest.getEventDate());
-        }
-
-        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.CANCEL_REVIEW.name())) {
-            event.setState(EventState.CANCELED);
-        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.SEND_TO_REVIEW.name())) {
-            event.setState(EventState.PENDING);
-        }
-
-        eventRepository.save(event);
-
-        log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
-
-        Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
-
-        if (event.getPublishedOn() == null) {
-            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
-        }
-
-        StatsParams params = StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + eventId),
-                false,
-                event.getPublishedOn()
-        );
-
-        Long views = statsClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
-
-        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
     }
 
     @Override
@@ -182,15 +139,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
         }
 
-        StatsParams params = StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + eventId),
-                false,
-                event.getPublishedOn()
-        );
-
-        Long views = statsClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
+        Long views = getStatsViews(event);
 
         return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
     }
@@ -211,13 +160,32 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
-        Map<Long, Long> confirmedRequestsMap = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
+        Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
 
-        Set<Long> categoryIds = events.stream().map(Event::getCategoryId).collect(Collectors.toSet());
+        Set<Long> categoriesIds = events.stream().map(Event::getCategoryId).collect(Collectors.toSet());
 
-        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoryIds).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, category -> category));
+        Map<Long, Long> views = getStatsViewsMap(eventIds);
 
+        return getEventShortDtos(Collections.singletonMap(userId, userShortDto), categoriesIds, events, confirmedRequests, views);
+    }
+
+    private static StatsParams getStatsParams(Event event) {
+        return StatsUtil.buildStatsParams(
+                Collections.singletonList("/events/" + event.getId()),
+                false,
+                event.getPublishedOn()
+        );
+    }
+
+    private Long getStatsViews(Event event) {
+        StatsParams params = getStatsParams(event);
+
+        return statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+    }
+
+    private Map<Long, Long> getStatsViewsMap(Set<Long> eventIds) {
         StatsParams params = StatsUtil.buildStatsParams(
                 eventIds.stream()
                         .map(id -> "/events/" + id)
@@ -225,17 +193,23 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 false
         );
 
-        Map<Long, Long> viewsMap = StatsUtil.getViewsMap(statsClient.getStats(params));
+        return StatsUtil.getViewsMap(statsClient.getStats(params));
+    }
+
+    private List<EventShortDto> getEventShortDtos(Map<Long, UserShortDto> userShortDtos, Set<Long> categoriesIds, List<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
+        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoriesIds).stream()
+                .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
 
         return events.stream()
                 .map(event -> eventMapper.toEventShortDto(
-                        event,
-                        categoryDtos.get(event.getCategoryId()),
-                        userShortDto,
-                        confirmedRequestsMap.get(event.getId()),
-                        viewsMap.get(event.getId())
-                    )
+                                event,
+                                categoryDtos.get(event.getCategoryId()),
+                                userShortDtos.get(event.getInitiatorId()),
+                                confirmedRequests.get(event.getId()),
+                                views.get(event.getId())
+                        )
                 )
                 .toList();
     }
+
 }

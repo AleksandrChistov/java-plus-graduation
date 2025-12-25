@@ -5,6 +5,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.explorewithme.api.event.dto.LocationDto;
+import ru.practicum.explorewithme.event.enums.StateAction;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +28,7 @@ public class UpdateEventRequest {
     @PositiveOrZero
     private Integer participantLimit;
     private Boolean requestModeration;
-    private String stateAction;
+    private StateAction stateAction;
     @Size(max = 120, min = 3)
     private String title;
 }

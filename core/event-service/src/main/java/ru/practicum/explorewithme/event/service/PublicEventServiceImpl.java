@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class PublicEventServiceImpl implements PublicEventService {
 
-    private final StatsClient statClient;
+    private final StatsClient statsClient;
     private final RequestClient requestClient;
     private final CategoryClient categoryClient;
     private final UserClient userClient;
@@ -191,20 +191,20 @@ public class PublicEventServiceImpl implements PublicEventService {
         return PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sort);
     }
 
-    private Long getStatsViews(Event event) {
-        StatsParams params = getStatsParams(event);
-
-        return statClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
-    }
-
     private static StatsParams getStatsParams(Event event) {
         return StatsUtil.buildStatsParams(
                 Collections.singletonList("/events/" + event.getId()),
                 true,
                 event.getPublishedOn()
         );
+    }
+
+    private Long getStatsViews(Event event) {
+        StatsParams params = getStatsParams(event);
+
+        return statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
     }
 
     private Map<Long, Long> getStatsViewsMap(Set<Long> eventIds) {
@@ -215,7 +215,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                 false
         );
 
-        return StatsUtil.getViewsMap(statClient.getStats(statsParams));
+        return StatsUtil.getViewsMap(statsClient.getStats(statsParams));
     }
 
     private List<EventShortDto> getEventShortDtos(Set<Long> userIds, Set<Long> categoriesIds, List<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
@@ -251,7 +251,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .build();
 
         log.debug("Сохранение статистики = {}", statsDto);
-        statClient.hit(statsDto);
+        statsClient.hit(statsDto);
         log.info("Статистика сохранена.");
     }
 
