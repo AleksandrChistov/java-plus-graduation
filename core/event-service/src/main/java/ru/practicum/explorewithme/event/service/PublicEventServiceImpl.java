@@ -36,6 +36,7 @@ import ru.practicum.explorewithme.event.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -63,10 +64,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         if (params.getRangeStart() == null) params.setRangeStart(LocalDateTime.now());
 
-        Sort sort = params.getEventsSort().getSort();
-
-        Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sort);
-        List<Event> events = eventRepository.findAll(EventSpecifications.publicSpecification(params), pageable).stream().toList();
+        List<Event> events = eventRepository
+                .findAll(EventSpecifications.publicSpecification(params), makePageable(params))
+                .stream()
+                .toList();
 
         Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
@@ -85,43 +86,19 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         buildStatsDtoAndHit(request);
 
-        StatsParams statsParams = StatsUtil.buildStatsParams(
-                eventIds.stream()
-                        .map(id -> "/events/" + id)
-                        .toList(),
-                false
-        );
-
-        Map<Long, Long> views = StatsUtil.getViewsMap(statClient.getStats(statsParams));
+        Map<Long, Long> views = getStatsViewsMap(eventIds);
 
         Set<Long> userIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
 
-        Map<Long, UserShortDto> userShortDtos = userClient.getAllByIds(userIds).stream()
-                .collect(Collectors.toMap(UserDto::getId, userMapper::toUserShortDto));
+        Set<Long> categoriesIds = new HashSet<>(params.getCategories());
 
-        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(new HashSet<>(params.getCategories())).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, category -> category));
-
-        List<EventShortDto> result = events.stream()
-                .map(event ->
-                        eventMapper.toEventShortDto(
-                                event,
-                                categoryDtos.get(event.getCategoryId()),
-                                userShortDtos.get(event.getInitiatorId()),
-                                confirmedRequests.get(event.getId()),
-                                views.get(event.getId())
-                        )
-                )
-                .toList();
-
-        log.info("Метод вернул {} событий.", result.size());
-
-        return result;
+        return getEventShortDtos(userIds, categoriesIds, events, confirmedRequests, views);
     }
 
     @Override
     public EventFullDto getById(Long eventId, HttpServletRequest request) {
-        log.debug("Получен запрос на получение события с ID = {}", eventId);
+        log.debug("Получение события с ID = {}", eventId);
+
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено."));
 
@@ -137,18 +114,12 @@ public class PublicEventServiceImpl implements PublicEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
         }
 
-        StatsParams params = StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + eventId),
-                true,
-                event.getPublishedOn()
-        );
-
-        Long views = statClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
+        Long views = getStatsViews(event);
 
         EventFullDto dto = eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+
         log.debug("Получено событие с ID={}: {}", eventId, dto);
+
         return dto;
     }
 
@@ -175,55 +146,86 @@ public class PublicEventServiceImpl implements PublicEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userDto, confirmedRequests, 0L);
         }
 
-        StatsParams params = StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + eventId),
-                true,
-                event.getPublishedOn()
-        );
-
-        Long views = statClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
+        Long views = getStatsViews(event);
 
         EventFullDto dto = eventMapper.toEventFullDto(event, categoryDto, userDto, confirmedRequests, views);
+
         log.debug("Получено событие с ID={}: {}", eventId, dto);
+
         return dto;
     }
 
     @Override
     public List<EventShortDto> getAllByIds(Set<Long> eventIds) {
         log.debug("Получен запрос на получение событий с IDs = {}", eventIds);
+
         List<Event> events = eventRepository.findAllById(eventIds);
 
-        Set<Long> dbEventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
-
-        if (dbEventIds.isEmpty()) {
+        if (events.isEmpty()) {
             log.warn("Нет событий по указанным IDs {}", eventIds);
             return Collections.emptyList();
         }
 
+        Set<Long> dbEventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
+
         Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, dbEventIds);
 
+        Map<Long, Long> views = getStatsViewsMap(dbEventIds);
+
+        Set<Long> userIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
+
+        Set<Long> categoryIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
+
+        return getEventShortDtos(userIds, categoryIds, events, confirmedRequests, views);
+    }
+
+    @Override
+    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
+        log.debug("Получен запрос на проверку привязки категорий с categoryIds = {}", categoryIds);
+        List<Event> events = eventRepository.findAllByCategoryIdIn(categoryIds);
+        return events.size() > 0;
+    }
+
+    private static Pageable makePageable(EventParams params) {
+        Sort sort = params.getEventsSort().getSort();
+        return PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sort);
+    }
+
+    private Long getStatsViews(Event event) {
+        StatsParams params = getStatsParams(event);
+
+        return statClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+    }
+
+    private static StatsParams getStatsParams(Event event) {
+        return StatsUtil.buildStatsParams(
+                Collections.singletonList("/events/" + event.getId()),
+                true,
+                event.getPublishedOn()
+        );
+    }
+
+    private Map<Long, Long> getStatsViewsMap(Set<Long> eventIds) {
         StatsParams statsParams = StatsUtil.buildStatsParams(
-                dbEventIds.stream()
+                eventIds.stream()
                         .map(id -> "/events/" + id)
                         .toList(),
                 false
         );
 
-        Map<Long, Long> views = StatsUtil.getViewsMap(statClient.getStats(statsParams));
+        return StatsUtil.getViewsMap(statClient.getStats(statsParams));
+    }
 
-        Set<Long> userIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
-
+    private List<EventShortDto> getEventShortDtos(Set<Long> userIds, Set<Long> categoriesIds, List<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
         Map<Long, UserShortDto> userShortDtos = userClient.getAllByIds(userIds).stream()
                 .collect(Collectors.toMap(UserDto::getId, userMapper::toUserShortDto));
 
-        Set<Long> categoryIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
+        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoriesIds).stream()
+                .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
 
-        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoryIds).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, category -> category));
-
-        List<EventShortDto> result = events.stream()
+        return events.stream()
                 .map(event ->
                         eventMapper.toEventShortDto(
                                 event,
@@ -234,17 +236,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                         )
                 )
                 .toList();
-
-        log.info("Метод вернул {} событий.", result.size());
-
-        return result;
-    }
-
-    @Override
-    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
-        log.debug("Получен запрос на проверку привязки категорий с categoryIds = {}", categoryIds);
-        List<Event> events = eventRepository.findAllByCategoryIdIn(categoryIds);
-        return events.size() > 0;
     }
 
     private void buildStatsDtoAndHit(HttpServletRequest request) {
