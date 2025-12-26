@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -51,6 +52,9 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
+
+    @Value("${ru.practicum.explorewithme.appNameForStats}")
+    private String appName;
 
     @Override
     public List<EventShortDto> getAllByParams(EventParams params, HttpServletRequest request) {
@@ -210,7 +214,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         StatsDto statsDto = StatsDto.builder()
                 .ip(ip)
                 .uri(request.getRequestURI())
-                .app("explore-with-me-plus")
+                .app(appName)
                 .timestamp(LocalDateTime.now())
                 .build();
 

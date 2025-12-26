@@ -1,6 +1,9 @@
 server:
   port: 0
 
+ru.practicum.explorewithme:
+  appNameForStats: "explore-with-me-plus"
+
 spring:
   cloud:
     openfeign:
