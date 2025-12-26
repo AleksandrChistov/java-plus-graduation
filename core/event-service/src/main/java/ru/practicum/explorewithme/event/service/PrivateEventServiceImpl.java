@@ -52,6 +52,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
+        log.info("Создание нового события пользователем с ID {}: {}", userId, newEventDto);
+
         if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
         }
@@ -71,6 +73,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public EventFullDto update(Long userId, Long eventId, UpdateEventRequest updateEventRequest) {
+        log.info("Обновление события с ID {} пользователем с ID {}: {}", eventId, userId, updateEventRequest);
+
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(userId));
 
         Event event = eventRepository.findById(eventId)
@@ -84,8 +88,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         eventRepository.save(event);
 
-        log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
-
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
         if (event.getPublishedOn() == null) {
@@ -94,33 +96,16 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Long views = getStatsViews(event);
 
+        log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
+
         return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
-    }
-
-    private static void validateCriticalRules(Event event, Long userId, UpdateEventRequest updateEventRequest) {
-        Long eventId = event.getId();
-
-        if (!Objects.equals(userId, event.getInitiatorId())) {
-            log.error("Пользователь с ID {} пытается обновить чужое событие с ID {}", userId, eventId);
-            throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
-        }
-
-        if (event.getState() != EventState.PENDING && event.getState() != EventState.CANCELED) {
-            log.error("Невозможно обновить событие с ID {}: неверный статус события", eventId);
-            throw new RuleViolationException("Изменить можно только события в статусах PENDING и CANCELED");
-        }
-
-        if (updateEventRequest.getEventDate() != null &&
-                updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            log.error("Ошибка в дате события с ID {}: новая дата ранее двух часов от текущего момента", eventId);
-            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
-                    "часа от текущего момента");
-        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public EventFullDto getById(Long userId, Long eventId) {
+        log.info("Получение события с ID {} пользователем с ID {}.", eventId, userId);
+
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(userId));
 
         Event event = eventRepository.findById(eventId)
@@ -167,6 +152,27 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Map<Long, Long> views = getStatsViewsMap(eventIds);
 
         return getEventShortDtos(Collections.singletonMap(userId, userShortDto), categoriesIds, events, confirmedRequests, views);
+    }
+
+    private static void validateCriticalRules(Event event, Long userId, UpdateEventRequest updateEventRequest) {
+        Long eventId = event.getId();
+
+        if (!Objects.equals(userId, event.getInitiatorId())) {
+            log.error("Пользователь с ID {} пытается обновить чужое событие с ID {}", userId, eventId);
+            throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
+        }
+
+        if (event.getState() != EventState.PENDING && event.getState() != EventState.CANCELED) {
+            log.error("Невозможно обновить событие с ID {}: неверный статус события", eventId);
+            throw new RuleViolationException("Изменить можно только события в статусах PENDING и CANCELED");
+        }
+
+        if (updateEventRequest.getEventDate() != null &&
+                updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+            log.error("Ошибка в дате события с ID {}: новая дата ранее двух часов от текущего момента", eventId);
+            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
+                    "часа от текущего момента");
+        }
     }
 
     private static StatsParams getStatsParams(Event event) {

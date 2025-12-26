@@ -45,11 +45,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class PublicEventServiceImpl implements PublicEventService {
 
-    private final StatsClient statsClient;
-    private final RequestClient requestClient;
-    private final CategoryClient categoryClient;
-    private final UserClient userClient;
     private final EventRepository eventRepository;
+
+    private final UserClient userClient;
+    private final CategoryClient categoryClient;
+    private final RequestClient requestClient;
+    private final StatsClient statsClient;
+
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
 

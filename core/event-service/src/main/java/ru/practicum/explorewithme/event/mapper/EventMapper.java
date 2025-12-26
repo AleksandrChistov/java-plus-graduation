@@ -58,9 +58,9 @@ public interface EventMapper {
     default EventState mapStateAction(StateAction stateAction) {
         if (stateAction == null) return null;
         return switch (stateAction) {
-            case StateAction.CANCEL_REVIEW -> EventState.CANCELED;
+            case StateAction.CANCEL_REVIEW, StateAction.REJECT_EVENT -> EventState.CANCELED;
             case StateAction.SEND_TO_REVIEW -> EventState.PENDING;
-            default -> null; // не трогаем state, если неизвестное действие
+            case StateAction.PUBLISH_EVENT -> EventState.PUBLISHED;
         };
     }
 

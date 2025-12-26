@@ -11,6 +11,8 @@ import ru.practicum.StatsUtil;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
+import ru.practicum.explorewithme.api.event.dto.EventFullDto;
+import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
@@ -20,20 +22,18 @@ import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
-import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
-import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,70 +43,33 @@ import java.util.stream.Collectors;
 public class AdminEventServiceImpl implements AdminEventService {
 
     private final EventRepository eventRepository;
+
+    private final UserClient userClient;
     private final CategoryClient categoryClient;
     private final RequestClient requestClient;
-    private final UserClient userClient;
     private final StatsClient statsClient;
-    private final EventMapper eventMapper;
-    private final LocationMapper locationMapper;
 
+    private final EventMapper eventMapper;
     private final UserMapper userMapper;
 
     @Override
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
+        log.info("Администратором обновляется событие c ID {}: {}", eventId, updateEventRequest);
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
-        if (updateEventRequest.getTitle() != null) {
-            event.setTitle(updateEventRequest.getTitle());
-        }
-        if (updateEventRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventRequest.getAnnotation());
-        }
-        if (updateEventRequest.getDescription() != null) {
-            event.setDescription(updateEventRequest.getDescription());
-        }
-        if (updateEventRequest.getLocation() != null) {
-            event.setLocation(locationMapper.toEntity(updateEventRequest.getLocation()));
-        }
-        if (updateEventRequest.getPaid() != null) {
-            event.setPaid(updateEventRequest.getPaid());
-        }
-        if (updateEventRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventRequest.getParticipantLimit());
-        }
-        if (updateEventRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventRequest.getRequestModeration());
-        }
-        if (updateEventRequest.getEventDate() != null) {
-            if (LocalDateTime.now().plusHours(1).isAfter(updateEventRequest.getEventDate())) {
-                throw new BadRequestException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
-            }
-            event.setEventDate(updateEventRequest.getEventDate());
-        }
-
-        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT.name())) {
-            if (Objects.equals(event.getState(), EventState.PUBLISHED)) {
-                throw new RuleViolationException("Событие нельзя отклонить, если оно опубликовано (PUBLISHED)");
-            }
-            event.setState(EventState.CANCELED);
-        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT.name())) {
-            if (!Objects.equals(event.getState(), EventState.PENDING)) {
-                throw new RuleViolationException("Событие должно находиться в статусе PENDING");
-            }
-            event.setState(EventState.PUBLISHED);
-            event.setPublishedOn(LocalDateTime.now());
-        }
+        validateCriticalRules(updateEventRequest, event);
 
         ResponseCategoryDto categoryDto = categoryClient.getById(event.getCategoryId());
 
-        if (updateEventRequest.getCategory() != null) {
-            event.setCategoryId(categoryDto.getId());
+        eventMapper.updateEvent(event, updateEventRequest, categoryDto.getId());
+
+        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
+            event.setPublishedOn(LocalDateTime.now());
         }
 
         eventRepository.save(event);
-
-        log.info("Администратором обновлено событие c ID {}.", event.getId());
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
@@ -116,15 +79,9 @@ public class AdminEventServiceImpl implements AdminEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
         }
 
-        StatsParams params = StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + eventId),
-                false,
-                event.getPublishedOn()
-        );
+        Long views = getStatsViews(event);
 
-        Long views = statsClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
+        log.info("Администратором обновлено событие c ID {}.", event.getId());
 
         return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
     }
@@ -132,46 +89,96 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventFullDto> getAllByParams(AdminEventDto adminEventDto) {
-        Pageable pageable = PageRequest.of(
-                adminEventDto.getFrom().intValue() / adminEventDto.getSize().intValue(),
-                adminEventDto.getSize().intValue()
-        );
-        List<Event> events = eventRepository.findAll(EventSpecifications.adminSpecification(adminEventDto), pageable).getContent();
+        log.info("Получение администратором событий по параметрам: {}", adminEventDto);
+
+        List<Event> events = eventRepository.findAll(
+                EventSpecifications.adminSpecification(adminEventDto),
+                makePageable(adminEventDto)
+        ).getContent();
 
         Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
 
-        Map<Long, Long> confirmedRequestsMap = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
+        Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
 
-        Set<Long> categoryIds = events.stream().map(Event::getCategoryId).collect(Collectors.toSet());
-
-        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoryIds).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, category -> category));
+        Map<Long, Long> views = getStatsViewsMap(eventIds);
 
         Set<Long> userIds = events.stream().map(Event::getInitiatorId).collect(Collectors.toSet());
 
-        Map<Long, UserShortDto> userShortDtos = userClient.getAllByIds(userIds).stream()
-                .collect(Collectors.toMap(UserDto::getId, userMapper::toUserShortDto));
+        Set<Long> categoriesIds = events.stream().map(Event::getCategoryId).collect(Collectors.toSet());
 
-        StatsParams params = StatsUtil.buildStatsParams(
+        return getEventFullDtos(userIds, categoriesIds, events, confirmedRequests, views);
+    }
+
+    private static Pageable makePageable(AdminEventDto adminEventDto) {
+        return PageRequest.of(
+                adminEventDto.getFrom().intValue() / adminEventDto.getSize().intValue(),
+                adminEventDto.getSize().intValue()
+        );
+    }
+
+    private static void validateCriticalRules(UpdateEventRequest updateEventRequest, Event event) {
+        if (updateEventRequest.getEventDate() != null) {
+            if (LocalDateTime.now().plusHours(1).isAfter(updateEventRequest.getEventDate())) {
+                throw new BadRequestException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
+            }
+        }
+
+        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT)) {
+            if (Objects.equals(event.getState(), EventState.PUBLISHED)) {
+                throw new RuleViolationException("Событие нельзя отклонить, если оно опубликовано (PUBLISHED)");
+            }
+        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
+            if (!Objects.equals(event.getState(), EventState.PENDING)) {
+                throw new RuleViolationException("Событие должно находиться в статусе PENDING");
+            }
+        }
+    }
+
+    private static StatsParams getStatsParams(Event event) {
+        return StatsUtil.buildStatsParams(
+                Collections.singletonList("/events/" + event.getId()),
+                false,
+                event.getPublishedOn()
+        );
+    }
+
+    private Long getStatsViews(Event event) {
+        StatsParams params = getStatsParams(event);
+
+        return statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+    }
+
+    private Map<Long, Long> getStatsViewsMap(Set<Long> eventIds) {
+        StatsParams statsParams = StatsUtil.buildStatsParams(
                 eventIds.stream()
                         .map(id -> "/events/" + id)
                         .toList(),
                 false
         );
 
-        Map<Long, Long> viewsMap = StatsUtil.getViewsMap(statsClient.getStats(params));
+        return StatsUtil.getViewsMap(statsClient.getStats(statsParams));
+    }
 
-        List<EventFullDto> result = events.stream()
-                .map(event -> eventMapper.toEventFullDto(
-                        event,
-                        categoryDtos.get(event.getCategoryId()),
-                        userShortDtos.get(event.getInitiatorId()),
-                        confirmedRequestsMap.get(event.getId()),
-                        viewsMap.get(event.getId())
-                    )
+    private List<EventFullDto> getEventFullDtos(Set<Long> userIds, Set<Long> categoriesIds, List<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
+        Map<Long, UserShortDto> userShortDtos = userClient.getAllByIds(userIds).stream()
+                .collect(Collectors.toMap(UserDto::getId, userMapper::toUserShortDto));
+
+        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoriesIds).stream()
+                .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
+
+        return events.stream()
+                .map(event ->
+                        eventMapper.toEventFullDto(
+                                event,
+                                categoryDtos.get(event.getCategoryId()),
+                                userShortDtos.get(event.getInitiatorId()),
+                                confirmedRequests.get(event.getId()),
+                                views.get(event.getId())
+                        )
                 )
                 .toList();
-        log.info("Администратором получена информация о {} событиях.", result.size());
-        return result;
     }
+
 }
