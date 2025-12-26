@@ -1,9 +1,6 @@
 package ru.practicum.explorewithme.event.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
@@ -52,15 +49,15 @@ public interface EventMapper {
     @Mapping(target = "requestModeration", source = "updatedEvent.requestModeration")
     @Mapping(target = "eventDate", source = "updatedEvent.eventDate")
     @Mapping(target = "categoryId", source = "categoryId")
-    @Mapping(target = "state", expression = "java(mapStateAction(updatedEvent.getStateAction()))")
+    @Mapping(target = "state", expression = "java(updatedEvent.getStateAction() != null ? mapStateAction(updatedEvent.getStateAction()) : event.getState())")
     void updateEvent(@MappingTarget Event event, UpdateEventRequest updatedEvent, Long categoryId);
 
     default EventState mapStateAction(StateAction stateAction) {
         if (stateAction == null) return null;
         return switch (stateAction) {
-            case StateAction.CANCEL_REVIEW, StateAction.REJECT_EVENT -> EventState.CANCELED;
-            case StateAction.SEND_TO_REVIEW -> EventState.PENDING;
-            case StateAction.PUBLISH_EVENT -> EventState.PUBLISHED;
+            case CANCEL_REVIEW, REJECT_EVENT -> EventState.CANCELED;
+            case SEND_TO_REVIEW -> EventState.PENDING;
+            case PUBLISH_EVENT -> EventState.PUBLISHED;
         };
     }
 
