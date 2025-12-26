@@ -6,9 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsParams;
-import ru.practicum.StatsUtil;
-import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
@@ -28,10 +25,10 @@ import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
+import ru.practicum.explorewithme.event.util.EventServiceUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,7 +91,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
         }
 
-        Long views = getStatsViews(event);
+        Long views = EventServiceUtil.getStatsViews(statsClient, event, true);
 
         log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
 
@@ -124,7 +121,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
         }
 
-        Long views = getStatsViews(event);
+        Long views = EventServiceUtil.getStatsViews(statsClient, event, true);
 
         return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
     }
@@ -143,15 +140,28 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventRepository.findByInitiatorIdOrderByEventDateDesc(userId, pageable).stream().toList();
 
-        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
+        Set<Long> eventIds = events
+                .stream().map(Event::getId)
+                .collect(Collectors.toSet());
 
         Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
 
-        Set<Long> categoriesIds = events.stream().map(Event::getCategoryId).collect(Collectors.toSet());
+        Set<Long> categoriesIds = events.stream()
+                .map(Event::getCategoryId)
+                .collect(Collectors.toSet());
 
-        Map<Long, Long> views = getStatsViewsMap(eventIds);
+        Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
 
-        return getEventShortDtos(Collections.singletonMap(userId, userShortDto), categoriesIds, events, confirmedRequests, views);
+        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoriesIds);
+
+        return EventServiceUtil.getEventShortDtos(
+                Collections.singletonMap(userId, userShortDto),
+                categoryDtos,
+                events,
+                confirmedRequests,
+                views,
+                eventMapper
+        );
     }
 
     private static void validateCriticalRules(Event event, Long userId, UpdateEventRequest updateEventRequest) {
@@ -173,49 +183,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
                     "часа от текущего момента");
         }
-    }
-
-    private static StatsParams getStatsParams(Event event) {
-        return StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + event.getId()),
-                false,
-                event.getPublishedOn()
-        );
-    }
-
-    private Long getStatsViews(Event event) {
-        StatsParams params = getStatsParams(event);
-
-        return statsClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
-    }
-
-    private Map<Long, Long> getStatsViewsMap(Set<Long> eventIds) {
-        StatsParams params = StatsUtil.buildStatsParams(
-                eventIds.stream()
-                        .map(id -> "/events/" + id)
-                        .toList(),
-                false
-        );
-
-        return StatsUtil.getViewsMap(statsClient.getStats(params));
-    }
-
-    private List<EventShortDto> getEventShortDtos(Map<Long, UserShortDto> userShortDtos, Set<Long> categoriesIds, List<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
-        Map<Long, ResponseCategoryDto> categoryDtos = categoryClient.getAllByIds(categoriesIds).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
-
-        return events.stream()
-                .map(event -> eventMapper.toEventShortDto(
-                                event,
-                                categoryDtos.get(event.getCategoryId()),
-                                userShortDtos.get(event.getInitiatorId()),
-                                confirmedRequests.get(event.getId()),
-                                views.get(event.getId())
-                        )
-                )
-                .toList();
     }
 
 }
