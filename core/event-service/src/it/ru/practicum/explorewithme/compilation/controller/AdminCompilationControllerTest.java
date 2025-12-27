@@ -19,14 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
-import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
+import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.model.Compilation;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.model.Event;
@@ -67,9 +66,6 @@ class AdminCompilationControllerTest {
     private final UserClient userClient;
 
     @MockBean
-    private final CategoryClient categoryClient;
-
-    @MockBean
     private final StatsClient statsClient;
 
     @BeforeEach
@@ -102,15 +98,17 @@ class AdminCompilationControllerTest {
                 .initiatorId(1L)
                 .build();
 
+        Category category = Category.builder()
+                .name("Категория 1")
+                .build();
+
+        em.persist(category);
         em.persist(event1);
         em.persist(event2);
         em.flush();
 
         Long eventId1 = 1L;
         Long eventId2 = 2L;
-
-        when(categoryClient.getAllByIds(anySet()))
-                .thenReturn(List.of(new ResponseCategoryDto(1L, "Категория1")));
 
         when(userClient.getAllByIds(anySet()))
                 .thenReturn(List.of(new UserDto(1L, "Иванов Иван", "ivanov@mail.ru")));

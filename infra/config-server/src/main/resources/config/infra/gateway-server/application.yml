@@ -14,13 +14,13 @@ spring:
             - SetStatus=403
 
         # Категории
-        - id: category_service_admin
-          uri: lb://category-service
+        - id: event_category_service_admin
+          uri: lb://event-service
           predicates:
             - Path=/admin/categories, /admin/categories/**
 
-        - id: category_service_public
-          uri: lb://category-service
+        - id: event_category_service_public
+          uri: lb://event-service
           predicates:
             - Path=/categories, /categories/**
 

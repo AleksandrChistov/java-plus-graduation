@@ -74,8 +74,4 @@ public class PublicEventController implements EventServiceApi {
         return publicEventService.getAllByIds(eventIds);
     }
 
-    @Override
-    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
-        return publicEventService.isCategoriesLinked(categoryIds);
-    }
 }

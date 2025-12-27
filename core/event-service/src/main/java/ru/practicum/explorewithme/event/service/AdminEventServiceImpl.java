@@ -12,7 +12,8 @@ import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
+import ru.practicum.explorewithme.category.dao.CategoryRepository;
+import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
@@ -20,13 +21,14 @@ import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.enums.StateAction;
-import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.util.EventServiceUtil;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
+import ru.practicum.explorewithme.shared.util.EventServiceUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,14 +44,15 @@ import java.util.stream.Collectors;
 public class AdminEventServiceImpl implements AdminEventService {
 
     private final EventRepository eventRepository;
+    private final CategoryRepository categoryRepository;
 
     private final UserClient userClient;
-    private final CategoryClient categoryClient;
     private final RequestClient requestClient;
     private final StatsClient statsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
+    private final CategoryMapper categoryMapper;
 
     @Override
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
@@ -60,9 +63,10 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         validateCriticalRules(updateEventRequest, event);
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(event.getCategoryId());
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
-        eventMapper.updateEvent(event, updateEventRequest, categoryDto.getId());
+        eventMapper.updateEvent(event, updateEventRequest);
 
         if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
             event.setPublishedOn(LocalDateTime.now());
@@ -112,7 +116,9 @@ public class AdminEventServiceImpl implements AdminEventService {
                 .collect(Collectors.toSet());
 
         Map<Long, UserShortDto> userShortDtos = EventServiceUtil.getUserShortDtoMap(userClient, userIds, userMapper);
-        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoriesIds);
+
+        Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
+                .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
 
         return EventServiceUtil.getEventFullDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
     }

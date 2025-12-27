@@ -28,10 +28,4 @@ public class EventClientFallback implements EventClient {
         return List.of();
     }
 
-    @Override
-    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
-        log.warn("Сервис Event недоступен, кинул ServiceUnavailableException для categoryIds: {}", categoryIds);
-        throw new ServiceUnavailableException("Сервис Event недоступен");
-    }
-
 }

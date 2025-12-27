@@ -1,8 +1,6 @@
 package ru.practicum.explorewithme.event.service;
 
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,18 +18,20 @@ import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
+import ru.practicum.explorewithme.category.dao.CategoryRepository;
+import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.EventParams;
-import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.util.EventServiceUtil;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
+import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
+import ru.practicum.explorewithme.shared.util.EventServiceUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,14 +44,15 @@ import java.util.stream.Collectors;
 public class PublicEventServiceImpl implements PublicEventService {
 
     private final EventRepository eventRepository;
+    private final CategoryRepository categoryRepository;
 
     private final UserClient userClient;
-    private final CategoryClient categoryClient;
     private final RequestClient requestClient;
     private final StatsClient statsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
+    private final CategoryMapper categoryMapper;
 
     @Value("${ru.practicum.explorewithme.appNameForStats}")
     private String appName;
@@ -97,7 +98,8 @@ public class PublicEventServiceImpl implements PublicEventService {
         Set<Long> categoriesIds = new HashSet<>(params.getCategories());
 
         Map<Long, UserShortDto> userShortDtos = EventServiceUtil.getUserShortDtoMap(userClient, userIds, userMapper);
-        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoriesIds);
+
+        Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil.getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
 
         return EventServiceUtil.getEventShortDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
     }
@@ -113,7 +115,8 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         buildStatsDtoAndHit(request);
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(event.getCategoryId());
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(event.getInitiatorId()));
 
@@ -145,7 +148,8 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(event.getCategoryId());
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
         UserShortDto userDto = userMapper.toUserShortDto(userClient.getUserById(event.getInitiatorId()));
 
@@ -189,16 +193,11 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .collect(Collectors.toSet());
 
         Map<Long, UserShortDto> userShortDtos = EventServiceUtil.getUserShortDtoMap(userClient, userIds, userMapper);
-        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoryIds);
+
+        Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
+                .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoryIds);
 
         return EventServiceUtil.getEventShortDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
-    }
-
-    @Override
-    public boolean isCategoriesLinked(@Nullable Set<@Positive Long> categoryIds) {
-        log.debug("Получен запрос на проверку привязки категорий с categoryIds = {}", categoryIds);
-        List<Event> events = eventRepository.findAllByCategoryIdIn(categoryIds);
-        return events.size() > 0;
     }
 
     private Pageable makePageable(EventParams params) {

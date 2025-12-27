@@ -7,6 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication(scanBasePackages = {
         "ru.practicum.explorewithme.event",
         "ru.practicum.explorewithme.compilation",
+        "ru.practicum.explorewithme.category",
         "ru.practicum.explorewithme.shared",
         "ru.practicum.client"
 })

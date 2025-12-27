@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.util;
+package ru.practicum.explorewithme.shared.util;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.StatsParams;
@@ -10,7 +10,6 @@ import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
@@ -20,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @UtilityClass
@@ -51,12 +49,6 @@ public class EventServiceUtil {
         );
 
         return StatsUtil.getViewsMap(statsClient.getStats(statsParams));
-    }
-
-    public static Map<Long, ResponseCategoryDto> getResponseCategoryDtoMap(CategoryClient categoryClient, Set<Long> categoriesIds) {
-        // todo: replace with categoryRepository.getAllById
-        return categoryClient.getAllByIds(categoriesIds).stream()
-                .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
     }
 
     public static Map<Long, UserShortDto> getUserShortDtoMap(UserClient userClient, Set<Long> userIds, UserMapper userMapper) {

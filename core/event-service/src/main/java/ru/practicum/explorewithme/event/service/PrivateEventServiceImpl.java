@@ -13,19 +13,21 @@ import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
+import ru.practicum.explorewithme.category.dao.CategoryRepository;
+import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.util.EventServiceUtil;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
+import ru.practicum.explorewithme.shared.util.EventServiceUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,14 +40,15 @@ import java.util.stream.Collectors;
 public class PrivateEventServiceImpl implements PrivateEventService {
 
     private final EventRepository eventRepository;
+    private final CategoryRepository categoryRepository;
 
     private final UserClient userClient;
-    private final CategoryClient categoryClient;
     private final RequestClient requestClient;
     private final StatsClient statsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
+    private final CategoryMapper categoryMapper;
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
@@ -57,7 +60,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(userId));
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(newEventDto.getCategory());
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, newEventDto.getCategory());
 
         Event newEvent = eventMapper.toEvent(newEventDto, userShortDto.getId(), categoryDto.getId());
 
@@ -79,11 +83,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         validateCriticalRules(event, userShortDto.getId(), updateEventRequest);
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(updateEventRequest.getCategory() != null ? updateEventRequest.getCategory() : event.getCategoryId());
-
-        eventMapper.updateEvent(event, updateEventRequest, userShortDto.getId());
+        eventMapper.updateEvent(event, updateEventRequest);
 
         eventRepository.save(event);
+
+        Long categoryId = updateEventRequest.getCategory() != null ? updateEventRequest.getCategory() : event.getCategoryId();
+
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, categoryId);
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
@@ -115,7 +122,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
-        ResponseCategoryDto categoryDto = categoryClient.getById(event.getCategoryId());
+        ResponseCategoryDto categoryDto = CategoryServiceUtil
+                .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
         if (event.getPublishedOn() == null) {
             return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
@@ -152,7 +160,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
 
-        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoriesIds);
+        Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
+                .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
 
         return EventServiceUtil.getEventShortDtos(
                 Collections.singletonMap(userId, userShortDto),

@@ -11,20 +11,22 @@ import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserShortDto;
+import ru.practicum.explorewithme.category.dao.CategoryRepository;
+import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.compilation.dao.CompilationRepository;
 import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.mapper.CompilationMapper;
 import ru.practicum.explorewithme.compilation.model.Compilation;
-import ru.practicum.explorewithme.event.client.category.CategoryClient;
 import ru.practicum.explorewithme.event.client.request.RequestClient;
 import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.util.EventServiceUtil;
+import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
+import ru.practicum.explorewithme.shared.util.EventServiceUtil;
 import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 
 import java.util.*;
@@ -39,15 +41,16 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
+    private final CategoryRepository categoryRepository;
 
     private final UserClient userClient;
-    private final CategoryClient categoryClient;
     private final RequestClient requestClient;
     private final StatsClient statsClient;
 
     private final CompilationMapper compilationMapper;
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
+    private final CategoryMapper categoryMapper;
 
     /**
      * === Public endpoints accessible to all users. ===
@@ -191,12 +194,13 @@ public class CompilationServiceImpl implements CompilationService {
         Set<Long> userIds = events.stream()
                 .map(Event::getInitiatorId)
                 .collect(Collectors.toSet());
-        Set<Long> categoriesIds = events.stream()
+        Set<Long> categoryIds = events.stream()
                 .map(Event::getCategoryId)
                 .collect(Collectors.toSet());
 
         Map<Long, UserShortDto> userShortDtos = EventServiceUtil.getUserShortDtoMap(userClient, userIds, userMapper);
-        Map<Long, ResponseCategoryDto> categoryDtos = EventServiceUtil.getResponseCategoryDtoMap(categoryClient, categoriesIds);
+
+        Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil.getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoryIds);
 
         return EventServiceUtil.getEventShortDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
     }

@@ -3,15 +3,15 @@ package ru.practicum.explorewithme.event.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.event.dto.AdminEventDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
-import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.api.event.enums.EventState;
+import ru.practicum.explorewithme.event.dto.AdminEventDto;
+import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.service.AdminEventService;
 
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/events")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @Validated
 public class AdminEventController {

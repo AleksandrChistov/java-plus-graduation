@@ -48,9 +48,9 @@ public interface EventMapper {
     @Mapping(target = "participantLimit", source = "updatedEvent.participantLimit")
     @Mapping(target = "requestModeration", source = "updatedEvent.requestModeration")
     @Mapping(target = "eventDate", source = "updatedEvent.eventDate")
-    @Mapping(target = "categoryId", source = "categoryId")
+    @Mapping(target = "categoryId", source = "updatedEvent.category")
     @Mapping(target = "state", expression = "java(updatedEvent.getStateAction() != null ? mapStateAction(updatedEvent.getStateAction()) : event.getState())")
-    void updateEvent(@MappingTarget Event event, UpdateEventRequest updatedEvent, Long categoryId);
+    void updateEvent(@MappingTarget Event event, UpdateEventRequest updatedEvent);
 
     default EventState mapStateAction(StateAction stateAction) {
         if (stateAction == null) return null;

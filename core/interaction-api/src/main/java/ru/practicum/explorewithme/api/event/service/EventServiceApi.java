@@ -22,8 +22,4 @@ public interface EventServiceApi {
 
     @GetMapping(path = URL + "/by-ids", produces = MediaType.APPLICATION_JSON_VALUE)
     List<EventShortDto> getAllByIds(@RequestParam @NotNull Set<@Positive Long> eventIds);
-
-    @GetMapping(path = URL + "/check-categories", produces = MediaType.APPLICATION_JSON_VALUE)
-    boolean isCategoriesLinked(@RequestParam @Nullable Set<@Positive Long> categoryIds);
-
 }

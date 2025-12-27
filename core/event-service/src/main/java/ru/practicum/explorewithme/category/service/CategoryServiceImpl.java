@@ -6,13 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
-import ru.practicum.explorewithme.category.client.event.EventClient;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
-import ru.practicum.explorewithme.category.error.exception.NotFoundException;
-import ru.practicum.explorewithme.category.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.model.Category;
+import ru.practicum.explorewithme.event.dao.EventRepository;
+import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
+import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
 
 import java.util.List;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryMapper categoryMapper;
 
-    private final EventClient eventClient;
+    private final EventRepository eventRepository;
 
     /** === Public endpoints accessible to all users. === */
 
@@ -85,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new NotFoundException("Category with id=" + catId + " was not found");
         }
 
-        if (eventClient.isCategoriesLinked(Set.of(catId))) {
+        if (eventRepository.findAllByCategoryId(catId).size() > 0) {
             throw new RuleViolationException("Category is linked to events");
         }
 
