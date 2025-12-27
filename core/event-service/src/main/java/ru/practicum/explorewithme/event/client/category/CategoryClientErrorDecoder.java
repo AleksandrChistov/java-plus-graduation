@@ -7,11 +7,11 @@ import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
-import ru.practicum.explorewithme.event.error.ApiError;
-import ru.practicum.explorewithme.event.error.exception.BadRequestException;
-import ru.practicum.explorewithme.event.error.exception.NotFoundException;
-import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
-import ru.practicum.explorewithme.event.error.exception.ServiceUnavailableException;
+import ru.practicum.explorewithme.shared.error.ApiError;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
+import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
+import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.shared.error.exception.ServiceUnavailableException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

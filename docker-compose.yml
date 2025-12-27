@@ -278,43 +278,6 @@ services:
     networks:
       - microservice-net
 
-  compilation-service:
-    build: core/compilation-service
-    image: compilation-service
-    container_name: compilation-service
-    depends_on:
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      compilation-db:
-        condition: service_healthy
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://compilation-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
-    networks:
-      - microservice-net
-
-  compilation-db:
-    image: postgres:16.1
-    ports:
-      - "6548:5432"
-    environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
-      - POSTGRES_DB=explorewithme
-    volumes:
-      - ./core/compilation-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
-    networks:
-      - microservice-net
-
 networks:
   microservice-net:
     driver: bridge

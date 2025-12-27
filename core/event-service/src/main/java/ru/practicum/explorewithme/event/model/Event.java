@@ -32,7 +32,8 @@ public class Event {
 
     @NotNull
     @Column(name = "created_on", nullable = false)
-    private LocalDateTime createdOn;
+    @Builder.Default
+    private LocalDateTime createdOn = LocalDateTime.now();
 
     @NotBlank
     @Size(max = 7000)
@@ -59,14 +60,16 @@ public class Event {
     private Boolean paid;
 
     @Column(name = "participant_limit", nullable = false)
-    private Integer participantLimit;
+    @Builder.Default
+    private Integer participantLimit = 0;
 
     @Column(name = "request_moderation")
     private Boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
-    private EventState state;
+    @Builder.Default
+    private EventState state = EventState.PENDING;
 
     @NotBlank
     @Size(max = 120, min = 3)

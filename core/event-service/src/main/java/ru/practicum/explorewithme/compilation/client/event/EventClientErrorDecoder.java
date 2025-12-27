@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.event.client.request;
+package ru.practicum.explorewithme.compilation.client.event;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,19 +17,19 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
-public class RequestClientErrorDecoder implements ErrorDecoder {
+public class EventClientErrorDecoder implements ErrorDecoder {
 
     private final ErrorDecoder defaultDecoder = new Default();
 
     private final ObjectMapper objectMapper;
 
-    public RequestClientErrorDecoder(ObjectMapper objectMapper) {
+    public EventClientErrorDecoder(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     public Exception decode(String methodKey, Response response) {
-        log.debug("RequestClient methodKey: {}, response: {}", methodKey, response);
+        log.debug("EventClient methodKey: {}, response: {}", methodKey, response);
 
         try {
             if (response.status() == 404) {
@@ -45,7 +45,7 @@ public class RequestClientErrorDecoder implements ErrorDecoder {
                 return new ServiceUnavailableException(error.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Сломался в RequestClientErrorDecoder, methodKey {}", methodKey, e);
+            log.warn("Сломался в EventClientErrorDecoder, methodKey {}", methodKey, e);
         }
 
         return defaultDecoder.decode(methodKey, response);
@@ -64,7 +64,7 @@ public class RequestClientErrorDecoder implements ErrorDecoder {
                 }
             }
         } catch (IOException e) {
-            log.warn("Сломался в RequestClientErrorDecoder на парсинге объекта response {}", response, e);
+            log.warn("Сломался в EventClientErrorDecoder на парсинге объекта response {}", response, e);
         }
         return null;
     }

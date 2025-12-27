@@ -54,6 +54,7 @@ public class EventServiceUtil {
     }
 
     public static Map<Long, ResponseCategoryDto> getResponseCategoryDtoMap(CategoryClient categoryClient, Set<Long> categoriesIds) {
+        // todo: replace with categoryRepository.getAllById
         return categoryClient.getAllByIds(categoriesIds).stream()
                 .collect(Collectors.toMap(ResponseCategoryDto::getId, Function.identity()));
     }

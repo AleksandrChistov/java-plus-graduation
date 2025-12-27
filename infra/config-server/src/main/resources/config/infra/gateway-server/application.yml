@@ -74,13 +74,13 @@ spring:
             - Path=/admin/users, /admin/users/**
 
         # Подборки
-        - id: compilation_service_admin
-          uri: lb://compilation-service
+        - id: event_compilation_service_admin
+          uri: lb://event-service
           predicates:
             - Path=/admin/compilations, /admin/compilations/**
 
-        - id: compilation_service_public
-          uri: lb://compilation-service
+        - id: event_compilation_service_public
+          uri: lb://event-service
           predicates:
             - Path=/compilations, /compilations/**
 

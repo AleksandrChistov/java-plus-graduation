@@ -19,13 +19,13 @@ import ru.practicum.explorewithme.event.client.user.UserClient;
 import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
-import ru.practicum.explorewithme.event.error.exception.BadRequestException;
-import ru.practicum.explorewithme.event.error.exception.NotFoundException;
-import ru.practicum.explorewithme.event.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.event.util.EventServiceUtil;
+import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
+import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
 
 import java.time.LocalDateTime;
 import java.util.*;

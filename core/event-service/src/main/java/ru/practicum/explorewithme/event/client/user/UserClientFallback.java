@@ -3,7 +3,7 @@ package ru.practicum.explorewithme.event.client.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
-import ru.practicum.explorewithme.event.error.exception.ServiceUnavailableException;
+import ru.practicum.explorewithme.shared.error.exception.ServiceUnavailableException;
 
 import java.util.List;
 import java.util.Set;
