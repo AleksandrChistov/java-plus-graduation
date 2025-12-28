@@ -4,18 +4,99 @@ server:
 spring:
   cloud:
     gateway:
-      discovery.locator.enabled: true
+      discovery.locator.enabled: false
       routes:
-        - id: main_service_route
-          uri: lb://main-service
+        - id: block_internal
+          uri: no://op
           predicates:
-            - Path=/**
+            - Path=/api/v1/internal/**
+          filters:
+            - SetStatus=403
+
+        # Категории
+        - id: event_category_service_admin
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/categories, /admin/categories/**
+
+        - id: event_category_service_public
+          uri: lb://event-service
+          predicates:
+            - Path=/categories, /categories/**
+
+        # Комментарии
+        - id: comment_service_admin
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/events/comments, /admin/events/comments/**, /admin/events/*/comments, /admin/events/*/comments/**
+
+        - id: comment_service_private
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/*/events/*/comments, /users/*/events/*/comments/**
+
+        - id: comment_service_public
+          uri: lb://comment-service
+          predicates:
+            - Path=/events/comments, /events/comments/**, /events/*/comments, /events/*/comments/**
+
+        # Запросы на участие
+        - id: request_service_admin
+          uri: lb://request-service
+          predicates:
+            - Path=/admin/events/requests, /admin/events/requests/**
+
+        - id: request_service_private
+          uri: lb://request-service
+          predicates:
+            - Path=/users/*/requests, /users/*/requests/**, /users/*/events/*/requests, /users/*/events/*/requests/**
+
+        # События
+        - id: event_service_admin
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events, /admin/events/**
+
+        - id: event_service_private
+          uri: lb://event-service
+          predicates:
+            - Path=/users/*/events, /users/*/events/**
+
+        - id: event_service_public
+          uri: lb://event-service
+          predicates:
+            - Path=/events, /events/**
+
+        # Пользователи
+        - id: user_service_admin
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users, /admin/users/**
+
+        # Подборки
+        - id: event_compilation_service_admin
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/compilations, /admin/compilations/**
+
+        - id: event_compilation_service_public
+          uri: lb://event-service
+          predicates:
+            - Path=/compilations, /compilations/**
 
 management:
   endpoint:
+    gateway:
+      enabled: true
     health:
       enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: "*"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.handler.FilteringWebHandler: TRACE
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
