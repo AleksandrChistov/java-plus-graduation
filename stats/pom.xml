@@ -20,6 +20,7 @@
         <module>stats-server</module>
         <module>stats-client</module>
         <module>serialization</module>
+        <module>collector</module>
     </modules>
 
     <dependencyManagement>

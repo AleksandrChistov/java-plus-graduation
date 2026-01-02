@@ -1,0 +1,19 @@
+grpc:
+  server:
+   port: 0
+
+logging:
+  level:
+    io.grpc: INFO
+    io.netty: WARN
+
+stats:
+  collector:
+    kafka:
+      server: localhost:9092
+      userActions:
+        topics:
+          - stats.user-actions.v1
+        properties:
+          key.serializer: org.apache.kafka.common.serialization.StringSerializer
+          value.serializer: ru.practicum.ewm.stats.avro.serializer.GeneralAvroSerializer
