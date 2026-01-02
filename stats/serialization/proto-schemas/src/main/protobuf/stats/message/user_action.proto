@@ -1,4 +1,4 @@
-syntax = "proto 3";
+syntax = "proto3";
 
 package stats.message.action;
 

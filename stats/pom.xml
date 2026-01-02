@@ -15,15 +15,6 @@
 
     <name>Statistics POM</name>
 
-    <properties>
-        <stats-dto.version>0.0.1-SNAPSHOT</stats-dto.version>
-        <lombok.version>1.18.32</lombok.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <mapstruct-processor.version>1.5.5.Final</mapstruct-processor.version>
-        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <maven.compiler.version>3.11.0</maven.compiler.version>
-    </properties>
-
     <modules>
         <module>stats-dto</module>
         <module>stats-server</module>

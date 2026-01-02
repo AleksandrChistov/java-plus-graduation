@@ -12,13 +12,9 @@
     <artifactId>serialization</artifactId>
     <packaging>pom</packaging>
 
-    <properties>
-        <protobuf.version>3.23.4</protobuf.version>
-        <grpc.version>1.63.0</grpc.version>
-    </properties>
-
     <modules>
         <module>proto-schemas</module>
+        <module>avro-schemas</module>
     </modules>
 
 </project>
