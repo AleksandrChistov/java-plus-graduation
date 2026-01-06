@@ -287,6 +287,20 @@ services:
     networks:
       - microservice-net
 
+  stats-aggregator:
+    build: stats/aggregator
+    image: stats-aggregator
+    container_name: stats-aggregator
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+    networks:
+      - microservice-net
+
 networks:
   microservice-net:
     driver: bridge
