@@ -14,3 +14,13 @@ CREATE TABLE IF NOT EXISTS similarities (
     CHECK (event1 < event2)
     PRIMARY KEY (event1, event2)
 );
+
+DROP INDEX IF EXISTS interactions_user_id_idx;
+DROP INDEX IF EXISTS interactions_event_id_idx;
+DROP INDEX IF EXISTS similarities_event1_idx;
+DROP INDEX IF EXISTS similarities_event2_idx;
+
+CREATE INDEX IF NOT EXISTS interactions_user_id_idx ON interactions(user_id);
+CREATE INDEX IF NOT EXISTS interactions_event_id_idx ON interactions(event_id);
+CREATE INDEX IF NOT EXISTS similarities_event1_idx ON similarities(event1);
+CREATE INDEX IF NOT EXISTS similarities_event2_idx ON similarities(event2);
