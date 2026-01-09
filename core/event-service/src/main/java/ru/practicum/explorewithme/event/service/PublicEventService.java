@@ -12,6 +12,10 @@ public interface PublicEventService extends EventServiceApi {
 
     List<EventShortDto> getAllByParams(EventParams eventParams, HttpServletRequest request);
 
-    EventFullDto getById(Long id, HttpServletRequest request);
+    EventFullDto getById(long userId, long eventId);
+
+    List<EventShortDto> getRecommendationsForUser(long userId);
+
+    void likeEvent(long userId, long eventId);
 
 }

@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.StatsClient;
+import ru.practicum.client.RecommendationsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
@@ -25,9 +25,9 @@ import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
+import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
 import ru.practicum.explorewithme.shared.util.EventServiceUtil;
-import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -45,7 +45,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final UserClient userClient;
     private final RequestClient requestClient;
-    private final StatsClient statsClient;
+    private final RecommendationsClient recommendationsClient;
 
     private final CompilationMapper compilationMapper;
     private final EventMapper eventMapper;
@@ -189,7 +189,8 @@ public class CompilationServiceImpl implements CompilationService {
         List<Event> events = eventRepository.findAllById(new ArrayList<>(eventIds));
 
         Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
-        Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
+
+        Map<Long, Double> ratings = EventServiceUtil.getRatingsMap(recommendationsClient, eventIds);
 
         Set<Long> userIds = events.stream()
                 .map(Event::getInitiatorId)
@@ -202,7 +203,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil.getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoryIds);
 
-        return EventServiceUtil.getEventShortDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
+        return EventServiceUtil.getEventShortDtos(userShortDtos, categoryDtos, events, confirmedRequests, ratings, eventMapper);
     }
 
 }

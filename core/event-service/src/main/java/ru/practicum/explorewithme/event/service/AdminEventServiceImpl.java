@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.StatsClient;
+import ru.practicum.client.RecommendationsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
@@ -48,7 +48,7 @@ public class AdminEventServiceImpl implements AdminEventService {
 
     private final UserClient userClient;
     private final RequestClient requestClient;
-    private final StatsClient statsClient;
+    private final RecommendationsClient recommendationsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
@@ -79,14 +79,15 @@ public class AdminEventServiceImpl implements AdminEventService {
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(event.getInitiatorId()));
 
         if (event.getPublishedOn() == null) {
-            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
+            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0.0);
         }
 
-        Long views = EventServiceUtil.getStatsViews(statsClient, event, false);
+        double rating = EventServiceUtil.getRatingsMap(recommendationsClient, Set.of(event.getId()))
+                .getOrDefault(event.getId(), 0.0);
 
         log.info("Администратором обновлено событие c ID {}.", event.getId());
 
-        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, rating);
     }
 
     @Override
@@ -105,7 +106,7 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
 
-        Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
+        Map<Long, Double> ratings = EventServiceUtil.getRatingsMap(recommendationsClient, eventIds);
 
         Set<Long> userIds = events.stream()
                 .map(Event::getInitiatorId)
@@ -120,7 +121,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
                 .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
 
-        return EventServiceUtil.getEventFullDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
+        return EventServiceUtil.getEventFullDtos(userShortDtos, categoryDtos, events, confirmedRequests, ratings, eventMapper);
     }
 
     private static Pageable makePageable(AdminEventDto adminEventDto) {

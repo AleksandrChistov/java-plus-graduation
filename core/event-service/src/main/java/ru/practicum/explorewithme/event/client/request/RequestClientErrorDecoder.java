@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import ru.practicum.explorewithme.shared.error.ApiError;
+import ru.practicum.explorewithme.shared.error.exception.BadRequestException;
 import ru.practicum.explorewithme.shared.error.exception.NotFoundException;
 import ru.practicum.explorewithme.shared.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.shared.error.exception.ServiceUnavailableException;
@@ -32,6 +33,10 @@ public class RequestClientErrorDecoder implements ErrorDecoder {
         log.debug("RequestClient methodKey: {}, response: {}", methodKey, response);
 
         try {
+            if (response.status() == 400) {
+                ApiError error = parseErrorBody(response);
+                return new BadRequestException(error.getMessage());
+            }
             if (response.status() == 404) {
                 ApiError error = parseErrorBody(response);
                 return new NotFoundException(error.getMessage());

@@ -28,7 +28,7 @@ public class UserActionClient {
         return collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_LIKE));
     }
 
-    public UserActionProto getUserAction(long userId, long eventId, ActionTypeProto actionType) {
+    private UserActionProto getUserAction(long userId, long eventId, ActionTypeProto actionType) {
         return UserActionProto.newBuilder()
                 .setUserId(userId)
                 .setEventId(eventId)
