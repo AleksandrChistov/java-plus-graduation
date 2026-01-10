@@ -33,7 +33,7 @@ public class AggregationStarter {
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
-    private final int BATCH_SIZE = 50;
+    private final int BATCH_SIZE = 10;
 
     /**
      * Метод для начала процесса агрегации данных.

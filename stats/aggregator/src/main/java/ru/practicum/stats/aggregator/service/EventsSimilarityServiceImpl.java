@@ -6,7 +6,10 @@ import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -37,20 +40,21 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
      */
     @Override
     public List<EventSimilarityAvro> updateState(UserActionAvro action) {
-        double currentWeight = getUserActionsWeight(action.getEventId(), action.getUserId());
+        long userId = action.getUserId();
+        long eventId = action.getEventId();
+
+        double oldWeight = getUserActionsWeight(action.getEventId(), action.getUserId());
         double newWeight = mapNewUserActionWeight(action.getActionType());
 
-        log.info("Current weight: {}, new weight: {}", currentWeight, newWeight);
-
-        // если в результате пользовательского действия максимальный вес для мероприятия не изменился,
-        // то и пересчитывать сходство не требуется.
-        if (currentWeight != 0.0 && currentWeight >= newWeight) {
+        if (oldWeight >= newWeight) {
             return Collections.emptyList();
         }
 
         putUserActionsWeight(action, newWeight);
 
-        log.debug("List of user actions weights for event: {}, {}", action.getEventId(), eventsUserActionsWeights);
+        double oldSum = getWeightsSum(eventId);
+        double newSum = oldSum + oldWeight - newWeight;
+        putWeightsSum(eventId, newSum);
 
         return eventsUserActionsWeights.entrySet()
                 .stream()
@@ -59,9 +63,8 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
                     long eventIdA = Math.min(e.getKey(), action.getEventId());
                     long eventIdB = Math.max(e.getKey(), action.getEventId());
 
-                    double similarityScore = currentWeight == 0.0
-                            ? calculateSimilarityScore(eventIdA, eventIdB)
-                            : recalculateSimilarityScore(action, e, eventIdA, eventIdB, newWeight, currentWeight);
+                    double newSumMinWeight = updateMinWeightSum(eventId, e.getKey(), userId, oldWeight, newWeight);
+                    double similarityScore = calcSimilarity(eventId, e.getKey(), newSumMinWeight);
 
                     log.info("Similarity of event A: {} and event B: {} = {}", eventIdA, eventIdB, similarityScore);
 
@@ -75,88 +78,33 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
                 .toList();
     }
 
-    private double calculateSimilarityScore(long eventIdA, long eventIdB) {
-        log.info("Calculating similarity score for event A: {} and event B: {}", eventIdA, eventIdB);
+    private double calcSimilarity(long eventId, long otherEventId, double newSumMinPairWeight) {
+        if (newSumMinPairWeight == 0) return 0;
 
-        double minWeightSum = eventsUserActionsWeights
-                .computeIfAbsent(eventIdA, key -> new HashMap<>())
-                .entrySet()
-                .stream()
-                .map(userAction -> {
-                    double weightA = userAction.getValue();
-                    double weightB = getUserActionsWeight(eventIdB, userAction.getKey());
-                    return Math.min(weightA, weightB);
-                })
-                .reduce(0.0, Double::sum);
+        double sumEventWeight = getWeightsSum(eventId);
+        double sumOtherEventWeight = getWeightsSum(otherEventId);
 
-        log.info("Min weight sum for event A: {} and event B: {} = {}", eventIdA, eventIdB, minWeightSum);
-
-        putMinWeightsSum(eventIdA, eventIdB, minWeightSum);
-
-        double weightSumOfEventA = eventsUserActionsWeights
-                .computeIfAbsent(eventIdA, key -> new HashMap<>())
-                .values()
-                .stream().reduce(0.0, Double::sum);
-
-        double weightSumOfEventB = eventsUserActionsWeights
-                .computeIfAbsent(eventIdB, key -> new HashMap<>())
-                .values()
-                .stream().reduce(0.0, Double::sum);
-
-        log.info("Weight sum of event A: {} = {}, weight sum of event B: {} = {}", eventIdA, weightSumOfEventA, eventIdB, weightSumOfEventB);
-
-        putWeightsSum(eventIdA, weightSumOfEventA);
-        putWeightsSum(eventIdB, weightSumOfEventB);
-
-        return minWeightSum / (Math.sqrt(weightSumOfEventA) * Math.sqrt(weightSumOfEventB));
+        return newSumMinPairWeight / (Math.sqrt(sumEventWeight) * Math.sqrt(sumOtherEventWeight));
     }
 
-    private double recalculateSimilarityScore(UserActionAvro action, Map.Entry<Long, Map<Long, Double>> e, long eventIdA, long eventIdB, double newWeight, double currentWeight) {
-        log.info("Recalculating similarity score for event A: {} and event B: {}", eventIdA, eventIdB);
+    private double updateMinWeightSum(long eventId, long otherEventId, long userId, double oldWeight, double newWeight) {
+        double oldWeightOtherEvent = getUserActionsWeight(otherEventId, userId);
 
-        double oldMinWeightSum = getMinWeightsSum(eventIdA, eventIdB);
+        double oldMinPairWeight = Math.min(oldWeight, oldWeightOtherEvent);
+        double newMinPairWeight = Math.min(newWeight, oldWeightOtherEvent);
 
-        log.info("Old min weight sum for event A: {} and event B: {} = {}", eventIdA, eventIdB, oldMinWeightSum);
+        long firstEventId = Math.min(eventId, otherEventId);
+        long secondEventId = Math.max(eventId, otherEventId);
 
-        double oldWeightSumOfEventA = getWeightsSum(eventIdA);
-        double oldWeightSumOfEventB = getWeightsSum(eventIdB);
+        double oldSumMinPairWeight = getMinWeightsSum(firstEventId, secondEventId);
 
-        double otherWeight = e.getValue().get(action.getUserId());
+        if (oldMinPairWeight == newMinPairWeight) return oldSumMinPairWeight;
 
-        double minNew = Math.min(newWeight, otherWeight);
-        double minOld = Math.min(currentWeight, otherWeight);
+        double newSumMinPairWeight = oldSumMinPairWeight - oldMinPairWeight + newMinPairWeight;
 
-        double minDiff = minNew - minOld;
+        putMinWeightsSum(firstEventId, secondEventId, newSumMinPairWeight);
 
-        log.info("Min diff for minNew {} and minOld {} = {}", minNew, minOld, minDiff);
-
-        double newMinWeightSum = oldMinWeightSum + minDiff;
-
-        if (minDiff != 0.0) {
-            putMinWeightsSum(eventIdA, eventIdB, newMinWeightSum);
-        }
-
-        double weightDiff = newWeight - currentWeight;
-
-        log.info("Weight diff for newWeight {} and currentWeight {} = {}", newWeight, currentWeight, weightDiff);
-
-        if (action.getEventId() < e.getKey()) {
-            // Вычислим новую сумму весов события A:
-            double newWeightSumOfEventA = oldWeightSumOfEventA + weightDiff;
-
-            putWeightsSum(eventIdA, newWeightSumOfEventA);
-
-            // Вычислим новое значение коэффициента сходства мероприятий A и D:
-            return newMinWeightSum / (Math.sqrt(newWeightSumOfEventA) * Math.sqrt(oldWeightSumOfEventB));
-        } else {
-            // Вычислим новую сумму весов события B:
-            double newWeightSumOfEventB = oldWeightSumOfEventB + weightDiff;
-
-            putWeightsSum(eventIdB, newWeightSumOfEventB);
-
-            // Вычислим новое значение коэффициента сходства мероприятий A и D:
-            return newMinWeightSum / (Math.sqrt(oldWeightSumOfEventA) * Math.sqrt(newWeightSumOfEventB));
-        }
+        return newSumMinPairWeight;
     }
 
     private void putUserActionsWeight(UserActionAvro action, Double weight) {
@@ -179,10 +127,10 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
         };
     }
 
-    public void putMinWeightsSum(long eventA, long eventB, double minWeightSum) {
+    public void putMinWeightsSum(long eventA, long eventB, double minSum) {
         eventsPairMinWeightsSum
                 .computeIfAbsent(eventA, e -> new HashMap<>())
-                .put(eventB, minWeightSum);
+                .put(eventB, minSum);
     }
 
     public double getMinWeightsSum(long eventA, long eventB) {
@@ -191,8 +139,8 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
                 .getOrDefault(eventB, 0.0);
     }
 
-    private void putWeightsSum(long eventId, double newWeightSumOfEventA) {
-        eventsWeightsSum.put(eventId, newWeightSumOfEventA);
+    private void putWeightsSum(long eventId, double newSum) {
+        eventsWeightsSum.put(eventId, newSum);
     }
 
     private Double getWeightsSum(long eventId) {

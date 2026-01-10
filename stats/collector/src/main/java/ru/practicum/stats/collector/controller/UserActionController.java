@@ -41,7 +41,7 @@ public class UserActionController extends UserActionControllerGrpc.UserActionCon
             log.info("Отправка UserAction Avro в Kafka: {}", userActionAvro.toString());
 
             topics.forEach(topic -> {
-                userActionProducer.send(topic, userActionAvro.getTimestamp().toEpochMilli(), userActionAvro.getUserId(), userActionAvro);
+                userActionProducer.send(topic, userActionAvro.getTimestamp().toEpochMilli(), userActionAvro.getEventId(), userActionAvro);
             });
 
             responseObserver.onNext(Empty.getDefaultInstance());
