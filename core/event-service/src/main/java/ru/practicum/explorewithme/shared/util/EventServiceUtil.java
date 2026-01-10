@@ -1,10 +1,8 @@
 package ru.practicum.explorewithme.shared.util;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.StatsParams;
-import ru.practicum.StatsUtil;
-import ru.practicum.StatsView;
-import ru.practicum.client.StatsClient;
+import ru.practicum.client.RecommendationsClient;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
@@ -15,7 +13,6 @@ import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.UserMapper;
 import ru.practicum.explorewithme.event.model.Event;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,31 +21,16 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class EventServiceUtil {
 
-    public static StatsParams getStatsParams(Event event, boolean unique) {
-        return StatsUtil.buildStatsParams(
-                Collections.singletonList("/events/" + event.getId()),
-                unique,
-                event.getPublishedOn()
-        );
+    public static final int MAX_RESULTS = 5;
+
+    public static Map<Long, Double> getRatingsMap(RecommendationsClient recommendationsClient, Set<Long> eventIds) {
+        return recommendationsClient.getInteractionsCount(eventIds, MAX_RESULTS)
+                .collect(Collectors.toMap(RecommendedEventProto::getEventId, RecommendedEventProto::getScore));
     }
 
-    public static Long getStatsViews(StatsClient statsClient, Event event, boolean unique) {
-        StatsParams params = getStatsParams(event, unique);
-
-        return statsClient.getStats(params).stream()
-                .mapToLong(StatsView::getHits)
-                .sum();
-    }
-
-    public static Map<Long, Long> getStatsViewsMap(StatsClient statsClient, Set<Long> eventIds) {
-        StatsParams statsParams = StatsUtil.buildStatsParams(
-                eventIds.stream()
-                        .map(id -> "/events/" + id)
-                        .toList(),
-                false
-        );
-
-        return StatsUtil.getViewsMap(statsClient.getStats(statsParams));
+    public static Map<Long, Double> getRecommendationsMap(RecommendationsClient recommendationsClient, long userId) {
+        return recommendationsClient.getRecommendationsForUser(userId, MAX_RESULTS)
+                .collect(Collectors.toMap(RecommendedEventProto::getEventId, RecommendedEventProto::getScore));
     }
 
     public static Map<Long, UserShortDto> getUserShortDtoMap(UserClient userClient, Set<Long> userIds, UserMapper userMapper) {
@@ -61,7 +43,7 @@ public class EventServiceUtil {
             Map<Long, ResponseCategoryDto> categoryDtos,
             List<Event> events,
             Map<Long, Long> confirmedRequests,
-            Map<Long, Long> views,
+            Map<Long, Double> ratings,
             EventMapper eventMapper
     ) {
         return events.stream()
@@ -70,8 +52,8 @@ public class EventServiceUtil {
                                 event,
                                 categoryDtos.get(event.getCategoryId()),
                                 userShortDtos.get(event.getInitiatorId()),
-                                confirmedRequests.get(event.getId()),
-                                views.get(event.getId())
+                                confirmedRequests.getOrDefault(event.getId(), 0L),
+                                ratings.getOrDefault(event.getId(), 0.0)
                         )
                 )
                 .toList();
@@ -82,7 +64,7 @@ public class EventServiceUtil {
             Map<Long, ResponseCategoryDto> categoryDtos,
             List<Event> events,
             Map<Long, Long> confirmedRequests,
-            Map<Long, Long> views,
+            Map<Long, Double> ratings,
             EventMapper eventMapper
     ) {
         return events.stream()
@@ -91,8 +73,8 @@ public class EventServiceUtil {
                                 event,
                                 categoryDtos.get(event.getCategoryId()),
                                 userShortDtos.get(event.getInitiatorId()),
-                                confirmedRequests.get(event.getId()),
-                                views.get(event.getId())
+                                confirmedRequests.getOrDefault(event.getId(), 0L),
+                                ratings.getOrDefault(event.getId(), 0.0)
                         )
                 )
                 .toList();

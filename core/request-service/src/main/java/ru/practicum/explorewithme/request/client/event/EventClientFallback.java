@@ -1,6 +1,5 @@
 package ru.practicum.explorewithme.request.client.event;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

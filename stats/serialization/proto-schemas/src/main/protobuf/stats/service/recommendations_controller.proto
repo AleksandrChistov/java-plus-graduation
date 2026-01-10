@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package stats.service.dashboard;
+
+option java_multiple_files = true;
+option java_package = "ru.practicum.ewm.stats.proto";
+
+import "stats/message/user_predictions_request.proto";
+import "stats/message/similar_events_request.proto";
+import "stats/message/interactions_count_request.proto";
+import "stats/message/recomended_event.proto";
+
+service RecommendationsController {
+  /**
+  * возвращает поток рекомендованных мероприятий для указанного пользователя
+  * возвращает поток сообщений с предсказанной оценкой.
+   */
+  rpc GetRecommendationsForUser (stats.message.event.request.UserPredictionsRequestProto)
+      returns (stream stats.message.event.response.RecommendedEventProto);
+
+  /**
+  * возвращает поток мероприятий, с которыми не взаимодействовал этот пользователь, но которые максимально похожи на указанное мероприятие
+  * возвращает поток сообщений с коэффициентом подобия.
+   */
+  rpc GetSimilarEvents (stats.message.event.request.SimilarEventsRequestProto)
+      returns (stream stats.message.event.response.RecommendedEventProto);
+
+  /**
+  * получает идентификаторы мероприятий и возвращает их поток с суммой максимальных весов действий каждого пользователя с этими мероприятиями
+  * возвращает поток сообщений с количеством взаимодействий.
+   */
+  rpc GetInteractionsCount (stats.message.event.request.InteractionsCountRequestProto)
+      returns (stream stats.message.event.response.RecommendedEventProto);
+}

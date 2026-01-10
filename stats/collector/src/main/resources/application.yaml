@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: collector
+  main:
+    banner-mode: OFF
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+      fail-fast: true
+      retry:
+        use-random-policy: true
+        initial-interval: 1000
+        max-interval: 10000
+        max-attempts: 15
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE:http://localhost:8761/eureka/}
+    registry-fetch-interval-seconds: 5
+  instance:
+    preferIpAddress: true
+    instance-id: ${spring.application.name}:${random.value}
+    leaseRenewalIntervalInSeconds: 10

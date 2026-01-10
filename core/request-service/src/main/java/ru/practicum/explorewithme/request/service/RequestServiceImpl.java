@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.client.UserActionClient;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.request.dto.RequestDto;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
@@ -29,11 +30,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class RequestServiceImpl implements RequestService {
+
     private final RequestRepository requestRepository;
-    private final UserClient userClient;
-    private final EventClient eventClient;
+
     private final RequestMapper requestMapper;
     private final EntityManager em;
+
+    private final UserClient userClient;
+    private final EventClient eventClient;
+    private final UserActionClient userActionClient;
 
     @Override
     public RequestDto createRequest(Long userId, Long eventId) {
@@ -77,6 +82,8 @@ public class RequestServiceImpl implements RequestService {
         // Явно перезагружаем из БД чтобы получить created
         em.flush();
         em.refresh(savedRequest);
+
+        userActionClient.sendRegistrationEvent(userId, eventId);
 
         return requestMapper.toRequestDto(savedRequest);
     }
