@@ -70,12 +70,12 @@ public class KafkaConfigImpl implements KafkaConfig {
         return eventsSimilarity.topics;
     }
 
-    private Consumer<String, UserActionAvro> userActionsConsumer;
+    private Consumer<Long, UserActionAvro> userActionsConsumer;
 
     private Consumer<String, EventSimilarityAvro> eventsSimilarityConsumer;
 
     @Override
-    public Consumer<String, UserActionAvro> getUserActionsConsumer() {
+    public Consumer<Long, UserActionAvro> getUserActionsConsumer() {
         if (userActionsConsumer == null) {
             userActionsConsumer = new KafkaConsumer<>(userActions.consumer.getProperties());
             log.info("Создали косьюмер для user actions с groupId = {}", userActions.consumer.getProperties().get("group.id"));
@@ -87,7 +87,7 @@ public class KafkaConfigImpl implements KafkaConfig {
     public Consumer<String, EventSimilarityAvro> getEventsSimilarityConsumer() {
         if (eventsSimilarityConsumer == null) {
             eventsSimilarityConsumer = new KafkaConsumer<>(eventsSimilarity.consumer.getProperties());
-            log.info("Создали косьюмер для events similarity с groupId = {}", userActions.consumer.getProperties().get("group.id"));
+            log.info("Создали косьюмер для events similarity с groupId = {}", eventsSimilarity.consumer.getProperties().get("group.id"));
         }
         return eventsSimilarityConsumer;
     }

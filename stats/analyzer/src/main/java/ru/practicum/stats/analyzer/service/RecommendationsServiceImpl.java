@@ -12,6 +12,7 @@ import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
 import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
 import ru.practicum.stats.analyzer.dal.dao.InteractionRepository;
 import ru.practicum.stats.analyzer.dal.dao.SimilarityRepository;
+import ru.practicum.stats.analyzer.dal.dto.EventRatingDto;
 import ru.practicum.stats.analyzer.dal.model.interaction.Interaction;
 import ru.practicum.stats.analyzer.dal.model.similarity.Similarity;
 
@@ -47,7 +48,7 @@ public class RecommendationsServiceImpl implements RecommendationsService {
 
         // найти N похожих, с котороми пользователь еще не взаимодействовал
         List<Similarity> notInteractedSimilarities = similarityRepository
-                .findAllById_Event1InAndId_Event2NotInOrId_Event1NotInAndId_Event2InOrderBySimilarityDesc(interactedEventIds, Limit.of(request.getMaxResults()));
+                .findAllByEvent1InAndEvent2NotInOrderBySimilarityDesc(interactedEventIds, Limit.of(request.getMaxResults()));
 
         log.debug("Найдены похожие N, с котороми пользователь еще не взаимодействовал: {}", notInteractedSimilarities);
 
@@ -153,7 +154,9 @@ public class RecommendationsServiceImpl implements RecommendationsService {
 
     @Override
     public List<RecommendedEventProto> getInteractionsCounts(InteractionsCountRequestProto request) {
-        return interactionRepository.findGroupedRatingsAsDto(request.getEventIdList());
+        return interactionRepository.findGroupedRatingsAsDto(request.getEventIdList()).stream()
+                .map(EventRatingDto::toProto)
+                .toList();
     }
 
 }

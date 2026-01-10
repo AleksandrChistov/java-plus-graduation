@@ -40,7 +40,7 @@ public class AggregationStarter {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
-        final Consumer<String, UserActionAvro> consumer = kafka.userActionsConsumer();
+        final Consumer<Long, UserActionAvro> consumer = kafka.userActionsConsumer();
         final Producer<String, EventSimilarityAvro> producer = kafka.eventSimilarityProducer();
 
         try {
@@ -52,10 +52,10 @@ public class AggregationStarter {
             consumer.subscribe(kafka.userActionsTopics());
 
             while (true) {
-                ConsumerRecords<String, UserActionAvro> records = consumer.poll(kafka.userActionsPollTimeout());
+                ConsumerRecords<Long, UserActionAvro> records = consumer.poll(kafka.userActionsPollTimeout());
                 int count = 0;
 
-                for (ConsumerRecord<String, UserActionAvro> record : records) {
+                for (ConsumerRecord<Long, UserActionAvro> record : records) {
                     handleRecord(record, producer);
                     manageOffsets(consumer, record, count);
                     count++;
@@ -78,7 +78,7 @@ public class AggregationStarter {
         }
     }
 
-    private void handleRecord(ConsumerRecord<String, UserActionAvro> record, Producer<String, EventSimilarityAvro> producer) {
+    private void handleRecord(ConsumerRecord<Long, UserActionAvro> record, Producer<String, EventSimilarityAvro> producer) {
         UserActionAvro event = record.value();
         log.info("Получено событие от пользователя: {}", event.toString());
 
@@ -110,8 +110,8 @@ public class AggregationStarter {
     }
 
     private void manageOffsets(
-            Consumer<String, UserActionAvro> consumer,
-            ConsumerRecord<String, UserActionAvro> record,
+            Consumer<Long, UserActionAvro> consumer,
+            ConsumerRecord<Long, UserActionAvro> record,
             int count
     ) {
         currentOffsets.put(

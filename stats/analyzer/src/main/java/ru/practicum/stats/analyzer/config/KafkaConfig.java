@@ -17,7 +17,7 @@ public interface KafkaConfig {
 
     List<String> eventSimilarityTopics();
 
-    Consumer<String, UserActionAvro> getUserActionsConsumer();
+    Consumer<Long, UserActionAvro> getUserActionsConsumer();
 
     Consumer<String, EventSimilarityAvro> getEventsSimilarityConsumer();
 

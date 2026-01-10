@@ -7,7 +7,7 @@ import ru.practicum.explorewithme.api.request.dto.RequestDto;
 
 import java.util.List;
 
-public interface RequestServiceApi {
+public interface RequestServiceApi extends AdminRequestServiceApi {
 
     @GetMapping(path = "/users/{userId}/events/{eventId}/requests", produces = MediaType.APPLICATION_JSON_VALUE)
     List<RequestDto> getEventRequests(

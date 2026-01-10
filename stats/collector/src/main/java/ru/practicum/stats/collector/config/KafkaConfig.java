@@ -12,17 +12,17 @@ import java.util.Properties;
 @ConfigurationProperties(prefix = "stats.collector.kafka")
 @Setter
 public class KafkaConfig {
-    @Getter
-    private String server;
-    @Getter
-    private List<String> topics;
     private UserActions userActions;
 
     @Getter
     @Setter
     public static class UserActions {
-        @Getter
         private Properties properties;
+        private List<String> topics;
+    }
+
+    public List<String> getUserActionsTopics() {
+        return userActions.getTopics();
     }
 
     public Properties getUserActionsProperties() {

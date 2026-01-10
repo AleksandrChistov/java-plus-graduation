@@ -39,7 +39,7 @@ public class UserInteractionHandler {
     @Async
     @EventListener(ApplicationReadyEvent.class)
     public void saveUserActions() {
-        final Consumer<String, UserActionAvro> consumer = kafka.getUserActionsConsumer();
+        final Consumer<Long, UserActionAvro> consumer = kafka.getUserActionsConsumer();
 
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -50,10 +50,10 @@ public class UserInteractionHandler {
             consumer.subscribe(kafka.userActionsTopics());
 
             while (true) {
-                ConsumerRecords<String, UserActionAvro> records = consumer.poll(kafka.userActionsPollTimeout());
+                ConsumerRecords<Long, UserActionAvro> records = consumer.poll(kafka.userActionsPollTimeout());
                 int count = 0;
 
-                for (ConsumerRecord<String, UserActionAvro> record : records) {
+                for (ConsumerRecord<Long, UserActionAvro> record : records) {
                     handleRecord(record);
                     manageOffsets(consumer, record, count);
                     count++;
@@ -75,7 +75,7 @@ public class UserInteractionHandler {
         }
     }
 
-    private void handleRecord(ConsumerRecord<String, UserActionAvro> record) {
+    private void handleRecord(ConsumerRecord<Long, UserActionAvro> record) {
         UserActionAvro event = record.value();
 
         log.info("Получено событие действия пользователя: {}", event.toString());
@@ -84,8 +84,8 @@ public class UserInteractionHandler {
     }
 
     private void manageOffsets(
-            Consumer<String, UserActionAvro> consumer,
-            ConsumerRecord<String, UserActionAvro> record,
+            Consumer<Long, UserActionAvro> consumer,
+            ConsumerRecord<Long, UserActionAvro> record,
             int count
     ) {
         currentOffsets.put(

@@ -12,8 +12,8 @@ stats:
           pollTimeout: 100
           properties:
             bootstrap.servers: ${stats.aggregator.kafka.bootstrap-server}
-            key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-            value.deserializer: ru.practicum.ewm.stats.avro.serializer.UserActionDeserializer
+            key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+            value.deserializer: ru.practicum.ewm.stats.avro.deserializer.UserActionDeserializer
             group.id: stats.user.actions
             enable.auto.commit: false
             auto.offset.reset: earliest

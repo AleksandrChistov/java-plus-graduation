@@ -4,7 +4,7 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.ewm.stats.proto.RecommendedEventProto;
+import ru.practicum.stats.analyzer.dal.dto.EventRatingDto;
 import ru.practicum.stats.analyzer.dal.model.interaction.Interaction;
 import ru.practicum.stats.analyzer.dal.model.interaction.InteractionId;
 
@@ -17,7 +17,7 @@ public interface InteractionRepository extends JpaRepository<Interaction, Intera
     List<Interaction> findAllById_UserId(Long userId);
 
     @Query("""
-    SELECT new ru.practicum.ewm.stats.proto.RecommendedEventProto(
+    SELECT new ru.practicum.stats.analyzer.dal.dto.EventRatingDto(
         i.id.eventId,
         SUM(i.rating) as ratingSum
     )
@@ -26,6 +26,6 @@ public interface InteractionRepository extends JpaRepository<Interaction, Intera
     GROUP BY i.id.eventId
     ORDER BY ratingSum DESC
     """)
-    List<RecommendedEventProto> findGroupedRatingsAsDto(@Param("eventIds") List<Long> eventIds);
+    List<EventRatingDto> findGroupedRatingsAsDto(@Param("eventIds") List<Long> eventIds);
 
 }

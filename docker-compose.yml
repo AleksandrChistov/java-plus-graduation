@@ -16,6 +16,8 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
       KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
       CLUSTER_ID: 'K0EA9p0yEe6MkAAAAkKsEg'
+    networks:
+      - microservice-net
 
   kafka-init-topics:
     image: confluentinc/confluent-local:7.4.3
@@ -30,6 +32,8 @@ services:
                              --partitions 1 --replication-factor 1 --if-not-exists \
                              --bootstrap-server kafka:29092'"
     init: true
+    networks:
+      - microservice-net
 
   discovery-server:
     build: infra/discovery-server
@@ -88,43 +92,6 @@ services:
     networks:
       - microservice-net
 
-  stats-server:
-    build: stats/stats-server
-    image: stats-server
-    container_name: stats-server
-    depends_on:
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      stats-db:
-        condition: service_healthy
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
-    networks:
-      - microservice-net
-
-  stats-db:
-    image: postgres:16.1
-    ports:
-      - "6541:5432"
-    environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
-      - POSTGRES_DB=explorewithme
-    volumes:
-      - ./stats/stats-server/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
-    networks:
-      - microservice-net
-
   user-service:
     build: core/user-service
     image: user-service
@@ -178,6 +145,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - stats.collector.kafka.server=kafka:29092
     networks:
       - microservice-net
 
@@ -215,6 +183,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - stats.collector.kafka.server=kafka:29092
     networks:
       - microservice-net
 
@@ -273,7 +242,7 @@ services:
     networks:
       - microservice-net
 
-  stats-collector:
+  collector:
     build: stats/collector
     image: stats-collector
     container_name: stats-collector
@@ -284,10 +253,12 @@ services:
         condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - stats.collector.kafka.server=kafka:29092
+      - eureka.instance.ip-address=collector
     networks:
       - microservice-net
 
-  stats-aggregator:
+  aggregator:
     build: stats/aggregator
     image: stats-aggregator
     container_name: stats-aggregator
@@ -298,6 +269,45 @@ services:
         condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - stats.collector.kafka.bootstrap-server=kafka:29092
+    networks:
+      - microservice-net
+
+  analyzer:
+    build: stats/analyzer
+    image: stats-analyzer
+    container_name: stats-analyzer
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      analyzer-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
+      - SPRING_DATASOURCE_USERNAME=explorewithme
+      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
+      - stats.collector.kafka.bootstrap-server=kafka:29092
+    networks:
+      - microservice-net
+
+  analyzer-db:
+    image: postgres:16.1
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_PASSWORD=explorewithme
+      - POSTGRES_USER=explorewithme
+      - POSTGRES_DB=explorewithme
+    volumes:
+      - ./stats/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
     networks:
       - microservice-net
 

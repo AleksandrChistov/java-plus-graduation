@@ -2,7 +2,11 @@ package ru.practicum.client;
 
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewm.stats.proto.*;
+import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
+import ru.practicum.ewm.stats.proto.RecommendationsControllerGrpc.RecommendationsControllerBlockingStub;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
+import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
+import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -14,8 +18,11 @@ import java.util.stream.StreamSupport;
 @Component
 public class RecommendationsClient {
 
-    @GrpcClient("analyzer")
-    private RecommendationsControllerGrpc.RecommendationsControllerBlockingStub analyzerClient;
+    private final RecommendationsControllerBlockingStub analyzerClient;
+
+    public RecommendationsClient(@GrpcClient("analyzer") RecommendationsControllerBlockingStub analyzerClient) {
+        this.analyzerClient = analyzerClient;
+    }
 
     public Stream<RecommendedEventProto> getSimilarEvents(long eventId, long userId, int maxResults) {
         SimilarEventsRequestProto request = SimilarEventsRequestProto.newBuilder()

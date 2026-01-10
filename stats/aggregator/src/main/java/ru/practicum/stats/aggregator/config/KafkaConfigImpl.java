@@ -66,12 +66,12 @@ public class KafkaConfigImpl implements KafkaConfig {
         return eventsSimilarity.topics;
     }
 
-    private Consumer<String, UserActionAvro> consumer;
+    private Consumer<Long, UserActionAvro> consumer;
 
     private Producer<String, EventSimilarityAvro> producer;
 
     @Override
-    public Consumer<String, UserActionAvro> userActionsConsumer() {
+    public Consumer<Long, UserActionAvro> userActionsConsumer() {
         if (consumer == null) {
             consumer = new KafkaConsumer<>(userActions.consumer.getProperties());
             log.info("Создали косьюмер с groupId = {}", userActions.consumer.getProperties().get("group.id"));

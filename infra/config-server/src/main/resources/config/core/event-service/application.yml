@@ -1,9 +1,6 @@
 server:
   port: 0
 
-ru.practicum.explorewithme:
-  appNameForStats: "explore-with-me-plus"
-
 spring:
   cloud:
     openfeign:
@@ -49,6 +46,11 @@ grpc:
   client:
     analyzer: # <- должно соответствовать значению в @GrpcClient
       address: 'discovery:///analyzer'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+    collector:
+      address: 'discovery:///collector'
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext

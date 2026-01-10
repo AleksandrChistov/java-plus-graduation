@@ -26,7 +26,7 @@ public class UserActionController extends UserActionControllerGrpc.UserActionCon
     private final UserActionMapper userActionMapper;
 
     public UserActionController(KafkaConfig kafkaConfig, KafkaUserActionProducer userActionProducer, UserActionMapper userActionMapper) {
-        this.topics = kafkaConfig.getTopics();
+        this.topics = kafkaConfig.getUserActionsTopics();
         this.userActionProducer = userActionProducer;
         this.userActionMapper = userActionMapper;
     }
@@ -41,8 +41,7 @@ public class UserActionController extends UserActionControllerGrpc.UserActionCon
             log.info("Отправка UserAction Avro в Kafka: {}", userActionAvro.toString());
 
             topics.forEach(topic -> {
-                String key = createKey(userActionAvro.getUserId(), userActionAvro.getEventId());
-                userActionProducer.send(topic, userActionAvro.getTimestamp().toEpochMilli(), key, userActionAvro);
+                userActionProducer.send(topic, userActionAvro.getTimestamp().toEpochMilli(), userActionAvro.getUserId(), userActionAvro);
             });
 
             responseObserver.onNext(Empty.getDefaultInstance());
@@ -55,10 +54,6 @@ public class UserActionController extends UserActionControllerGrpc.UserActionCon
                             .withCause(e.getCause())
             ));
         }
-    }
-
-    private String createKey(long userId, long eventId) {
-        return String.format("%d:%d", userId, eventId);
     }
 
 }

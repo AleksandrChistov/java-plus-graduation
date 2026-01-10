@@ -7,6 +7,22 @@ logging:
     io.grpc: DEBUG
     io.netty: WARN
 
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6541/explorewithme
+    username: explorewithme
+    password: explorewithme
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: UTC
+  sql.init.mode: always
+
 stats:
   analyzer:
     kafka:
@@ -17,9 +33,9 @@ stats:
         consumer:
           pollTimeout: 500
           properties:
-            bootstrap.servers: ${stats.aggregator.kafka.bootstrap-server}
-            key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-            value.deserializer: ru.practicum.ewm.stats.avro.serializer.UserActionDeserializer
+            bootstrap.servers: ${stats.analyzer.kafka.bootstrap-server}
+            key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+            value.deserializer: ru.practicum.ewm.stats.avro.deserializer.UserActionDeserializer
             group.id: stats.user.actions
             enable.auto.commit: false
             auto.offset.reset: earliest
@@ -29,9 +45,9 @@ stats:
         consumer:
           pollTimeout: 500
           properties:
-            bootstrap.servers: ${stats.aggregator.kafka.bootstrap-server}
+            bootstrap.servers: ${stats.analyzer.kafka.bootstrap-server}
             key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-            value.deserializer: ru.practicum.ewm.stats.avro.serializer.EventsSimilarityDeserializer
+            value.deserializer: ru.practicum.ewm.stats.avro.deserializer.EventsSimilarityDeserializer
             group.id: stats.events.similarity
             enable.auto.commit: false
             auto.offset.reset: earliest

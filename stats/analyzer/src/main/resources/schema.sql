@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS similarities (
     event2 BIGINT NOT NULL,
     similarity DOUBLE PRECISION NOT NULL,
     action_ts TIMESTAMP WITH TIME ZONE NOT NULL,
-    CHECK (event1 < event2)
+    CHECK (event1 < event2),
     PRIMARY KEY (event1, event2)
 );
 

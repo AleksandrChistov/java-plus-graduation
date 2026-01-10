@@ -1,11 +1,10 @@
 package ru.practicum.client;
 
-import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.proto.ActionTypeProto;
-import ru.practicum.ewm.stats.proto.UserActionControllerGrpc;
+import ru.practicum.ewm.stats.proto.UserActionControllerGrpc.UserActionControllerBlockingStub;
 import ru.practicum.ewm.stats.proto.UserActionProto;
 
 import java.time.Instant;
@@ -13,19 +12,22 @@ import java.time.Instant;
 @Component
 public class UserActionClient {
 
-    @GrpcClient("collector")
-    private UserActionControllerGrpc.UserActionControllerBlockingStub collectorClient;
+    private final UserActionControllerBlockingStub collectorClient;
 
-    public Empty sendViewEvent(long userId, long eventId) {
-        return collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_VIEW));
+    public UserActionClient(@GrpcClient("collector") UserActionControllerBlockingStub collectorClient) {
+        this.collectorClient = collectorClient;
     }
 
-    public Empty sendRegistrationEvent(long userId, long eventId) {
-        return collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_REGISTER));
+    public void sendViewEvent(long userId, long eventId) {
+        collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_VIEW));
     }
 
-    public Empty sendLikeEvent(long userId, long eventId) {
-        return collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_LIKE));
+    public void sendRegistrationEvent(long userId, long eventId) {
+        collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_REGISTER));
+    }
+
+    public void sendLikeEvent(long userId, long eventId) {
+        collectorClient.collectUserAction(getUserAction(userId, eventId, ActionTypeProto.ACTION_LIKE));
     }
 
     private UserActionProto getUserAction(long userId, long eventId, ActionTypeProto actionType) {
