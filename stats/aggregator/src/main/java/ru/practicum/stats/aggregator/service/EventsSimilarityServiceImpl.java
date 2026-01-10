@@ -79,10 +79,17 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
     }
 
     private double calcSimilarity(long eventId, long otherEventId, double newSumMinPairWeight) {
-        if (newSumMinPairWeight == 0) return 0;
+        log.info("newSumMinPairWeight = {}", newSumMinPairWeight);
+        if (newSumMinPairWeight == 0.0) return 0;
 
         double sumEventWeight = getWeightsSum(eventId);
         double sumOtherEventWeight = getWeightsSum(otherEventId);
+
+        log.info("sumEventWeight = {}, sumOtherEventWeight = {}", sumEventWeight, sumOtherEventWeight);
+
+        if (sumEventWeight == 0.0 || sumOtherEventWeight == 0.0) {
+            return 0.0;
+        }
 
         return newSumMinPairWeight / (Math.sqrt(sumEventWeight) * Math.sqrt(sumOtherEventWeight));
     }

@@ -31,6 +31,6 @@ public class RequestClientFallback implements RequestClient {
     public List<RequestDto> getEventRequests(@PathVariable Long userId, @PathVariable Long eventId) {
         log.warn("Сервис Request недоступен, fallback отдал пустой список, параметры запроса userId: {}, eventId: {}", userId, eventId);
         return List.of();
-    };
+    }
 
 }
