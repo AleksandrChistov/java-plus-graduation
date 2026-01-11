@@ -80,7 +80,7 @@ public class UserInteractionHandler {
 
         log.info("Получено событие действия пользователя: {}", event.toString());
 
-        interactionService.save(event);
+        interactionService.saveIfWeightHigher(event);
     }
 
     private void manageOffsets(

@@ -2,10 +2,7 @@ package ru.practicum.stats.analyzer.dal.model.similarity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -14,6 +11,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class SimilarityId implements Serializable {
     @Column(name = "event1", nullable = false, updatable = false)
     private Long event1;

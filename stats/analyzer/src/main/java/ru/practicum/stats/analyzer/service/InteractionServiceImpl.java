@@ -9,6 +9,8 @@ import ru.practicum.stats.analyzer.dal.dao.InteractionRepository;
 import ru.practicum.stats.analyzer.dal.model.interaction.Interaction;
 import ru.practicum.stats.analyzer.dal.model.interaction.InteractionId;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -17,18 +19,21 @@ public class InteractionServiceImpl implements InteractionService {
     private final InteractionRepository interactionRepository;
 
     @Override
-    public Interaction save(UserActionAvro action) {
+    public void saveIfWeightHigher(UserActionAvro action) {
         InteractionId id = InteractionId.of(action.getUserId(), action.getEventId());
 
-        Double rating = mapUserActionWeight(action.getActionType());
+        Optional<Interaction> oldInteractionOpt = interactionRepository.findById(id);
 
-        Interaction interaction = Interaction.builder()
-                .id(id)
-                .rating(rating)
-                .actionDateTime(action.getTimestamp())
-                .build();
+        Double oldWeight = oldInteractionOpt.map(Interaction::getRating).orElse(0.0);
+        Double newWeight = mapUserActionWeight(action.getActionType());
 
-        return interactionRepository.save(interaction);
+        if (newWeight > oldWeight) {
+            interactionRepository.save(Interaction.builder()
+                    .id(id)
+                    .rating(newWeight)
+                    .actionDateTime(action.getTimestamp())
+                    .build());
+        }
     }
 
     private static Double mapUserActionWeight(ActionTypeAvro actionType) {
