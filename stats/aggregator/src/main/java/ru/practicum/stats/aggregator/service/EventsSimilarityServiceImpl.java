@@ -19,18 +19,18 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
      * Map<Event, Map<User, Weight>> матрица весов действий пользователей c мероприятиями
      * (учитывается только действие с максимальным весом)
      */
-    private Map<Long, Map<Long, Double>> eventsUserActionsWeights = new HashMap<>();
+    private final Map<Long, Map<Long, Double>> eventsUserActionsWeights = new HashMap<>();
 
     /**
      * Map<Event, WeightsSum> общие частные суммы весов каждого из мероприятий
      * (сумма весов действий пользователей)
      */
-    private Map<Long, Double> eventsWeightsSum = new HashMap<>();
+    private final Map<Long, Double> eventsWeightsSum = new HashMap<>();
 
     /**
      * Map<Event, Map<Event, S_min>> сумма минимальных весов для каждой пары мероприятий
      */
-    private Map<Long, Map<Long, Double>> eventsPairMinWeightsSum = new HashMap<>();
+    private final Map<Long, Map<Long, Double>> eventsPairMinWeightsSum = new HashMap<>();
 
 
     /**

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
@@ -29,7 +28,7 @@ public class RecommendationsServiceImpl implements RecommendationsService {
     private final InteractionRepository interactionRepository;
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE) // todo: remove after tests
+    @Transactional(readOnly = true)
     public List<RecommendedEventProto> getRecommendationsForUser(UserPredictionsRequestProto request) {
         // 1. Подбор мероприятий:
         // Получить N мероприятий недавно просмотренных пользователем
@@ -129,6 +128,7 @@ public class RecommendationsServiceImpl implements RecommendationsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RecommendedEventProto> getSimilarEvents(SimilarEventsRequestProto request) {
         List<Interaction> interactions = interactionRepository.findAllById_UserId(request.getUserId());
 
@@ -153,6 +153,7 @@ public class RecommendationsServiceImpl implements RecommendationsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RecommendedEventProto> getInteractionsCounts(InteractionsCountRequestProto request) {
         return interactionRepository.findGroupedRatingsAsDto(request.getEventIdList()).stream()
                 .map(EventRatingDto::toProto)
