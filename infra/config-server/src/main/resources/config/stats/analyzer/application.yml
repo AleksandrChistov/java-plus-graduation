@@ -36,7 +36,7 @@ stats:
             bootstrap.servers: ${stats.analyzer.kafka.bootstrap-server}
             key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
             value.deserializer: ru.practicum.ewm.stats.avro.deserializer.UserActionDeserializer
-            group.id: stats.user.actions
+            group.id: analyzer.stats.user.actions
             enable.auto.commit: false
             auto.offset.reset: earliest
       eventsSimilarity:
@@ -48,6 +48,6 @@ stats:
             bootstrap.servers: ${stats.analyzer.kafka.bootstrap-server}
             key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
             value.deserializer: ru.practicum.ewm.stats.avro.deserializer.EventsSimilarityDeserializer
-            group.id: stats.events.similarity
+            group.id: analyzer.stats.events.similarity
             enable.auto.commit: false
             auto.offset.reset: earliest
