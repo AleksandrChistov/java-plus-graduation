@@ -3,6 +3,7 @@ package ru.practicum.stats.analyzer.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.stats.analyzer.dal.dao.InteractionRepository;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class InteractionServiceImpl implements InteractionService {
 
     private final InteractionRepository interactionRepository;
