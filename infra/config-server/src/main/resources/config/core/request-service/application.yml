@@ -9,8 +9,8 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:6546/explorewithme
-    username: explorewithme
-    password: explorewithme
+    username: postgres
+    password: password
   jpa:
     show-sql: true
     hibernate:

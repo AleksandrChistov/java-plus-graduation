@@ -105,8 +105,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -116,8 +116,8 @@ services:
     ports:
       - "6543:5432"
     environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=explorewithme
     volumes:
       - ./core/user-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
@@ -142,8 +142,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://event-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
       - stats.collector.kafka.server=kafka:29092
     networks:
@@ -154,8 +154,8 @@ services:
     ports:
       - "6544:5432"
     environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=explorewithme
     volumes:
       - ./core/event-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
@@ -180,8 +180,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://request-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
       - stats.collector.kafka.server=kafka:29092
     networks:
@@ -192,8 +192,8 @@ services:
     ports:
       - "6546:5432"
     environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=explorewithme
     volumes:
       - ./core/request-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
@@ -218,8 +218,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comment-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
     networks:
       - microservice-net
@@ -229,8 +229,8 @@ services:
     ports:
       - "6547:5432"
     environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=explorewithme
     volumes:
       - ./core/comment-service/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
@@ -286,8 +286,8 @@ services:
         condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
-      - SPRING_DATASOURCE_USERNAME=explorewithme
-      - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
       - stats.collector.kafka.bootstrap-server=kafka:29092
     networks:
@@ -298,8 +298,8 @@ services:
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_PASSWORD=explorewithme
-      - POSTGRES_USER=explorewithme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=explorewithme
     volumes:
       - ./stats/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
