@@ -29,6 +29,7 @@
 
 		<avro.version>1.11.3</avro.version>
 		<kafka-clients.version>3.6.1</kafka-clients.version>
+		<io.grpc.version>1.63.0</io.grpc.version>
 		<grpc-server-spring-boot-starter.version>3.1.0.RELEASE</grpc-server-spring-boot-starter.version>
 		<grpc-client-spring-boot-starter.version>3.1.0.RELEASE</grpc-client-spring-boot-starter.version>
 		<protobuf.version>3.23.4</protobuf.version>
@@ -62,6 +63,16 @@
 			</dependency>
 
 			<!--    GRPC dependencies management        -->
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-protobuf</artifactId>
+				<version>${io.grpc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-stub</artifactId>
+				<version>${io.grpc.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>net.devh</groupId>
 				<artifactId>grpc-server-spring-boot-starter</artifactId>
