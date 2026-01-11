@@ -285,7 +285,7 @@ services:
       analyzer-db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/explorewithme
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://analyzer-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE=http://discovery-server:8761/eureka/
