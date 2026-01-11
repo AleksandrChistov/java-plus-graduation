@@ -53,7 +53,7 @@ public class EventsSimilarityServiceImpl implements EventsSimilarityService {
         putUserActionsWeight(action, newWeight);
 
         double oldSum = getWeightsSum(eventId);
-        double newSum = oldSum + oldWeight - newWeight;
+        double newSum = oldSum + newWeight - oldWeight;
         putWeightsSum(eventId, newSum);
 
         return eventsUserActionsWeights.entrySet()
