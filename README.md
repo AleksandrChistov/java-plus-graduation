@@ -104,6 +104,8 @@
 - `POST /users/{userId}/events` - создание события
 - `GET /users/{userId}/events` - получение событий пользователя
 - `PATCH /users/{userId}/events/{eventId}` - редактирование события
+- `GET /events/recommendations` — возвращает рекомендации мероприятий для пользователя
+- `PUT /events/{eventId}/like` — отправляет в Collector информацию о том, что пользователь лайкнул мероприятие. Идентификатор пользователя передается в HTTP-заголовке
 
 **Запросы на участие**:
 - `POST /users/{userId}/requests?eventId={eventId}` - создание запроса на участие
