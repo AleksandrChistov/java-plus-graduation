@@ -19,8 +19,8 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     @Builder.Default
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private LocalDateTime created = LocalDateTime.now();
 
     @Column(name = "event_id", nullable = false)

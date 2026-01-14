@@ -60,7 +60,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
         log.info("Администратором обновляется событие c ID {}: {}", eventId, updateEventRequest);
 
-        Map<String, Object> resultData =transactionTemplate.execute(status -> {
+        Map<String, Object> resultData = transactionTemplate.execute(status -> {
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
