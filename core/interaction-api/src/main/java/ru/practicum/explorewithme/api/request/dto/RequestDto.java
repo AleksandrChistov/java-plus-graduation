@@ -2,7 +2,7 @@ package ru.practicum.explorewithme.api.request.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RequestDto {
     private Long id;
-    private LocalDateTime created;
+    private Instant created;
     private Long event;
     private Long requester;
     private String status;

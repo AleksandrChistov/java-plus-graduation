@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "requests")
@@ -20,8 +20,8 @@ public class Request {
     private Long id;
 
     @Builder.Default
-    @Column(name = "created", nullable = false, insertable = false, updatable = false)
-    private LocalDateTime created = LocalDateTime.now();
+    @Column(name = "created", nullable = false, updatable = false)
+    private Instant created = Instant.now();
 
     @Column(name = "event_id", nullable = false)
     private Long eventId;
