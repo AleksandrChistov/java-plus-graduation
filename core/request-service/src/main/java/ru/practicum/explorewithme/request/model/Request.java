@@ -18,7 +18,8 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created", insertable = false, updatable = false)
+    @Column(name = "created", nullable = false, insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime created;
 
     @Column(name = "event_id", nullable = false)
