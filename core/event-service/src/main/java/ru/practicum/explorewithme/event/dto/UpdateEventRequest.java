@@ -9,6 +9,8 @@ import ru.practicum.explorewithme.event.enums.StateAction;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.explorewithme.api.shared.util.ConstantUtil.DATE_TIME_FORMAT;
+
 @Getter
 @Setter
 @ToString
@@ -21,7 +23,7 @@ public class UpdateEventRequest {
     private Long category;
     @Size(max = 7000, min = 20)
     private String description;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime eventDate;
     private LocationDto location;
     private Boolean paid;
