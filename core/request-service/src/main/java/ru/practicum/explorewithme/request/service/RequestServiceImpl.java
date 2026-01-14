@@ -71,9 +71,10 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
 
-            Request request = new Request();
-            request.setEventId(eventDto.getId());
-            request.setRequesterId(userDto.getId());
+            Request request = Request.builder()
+                    .eventId(eventDto.getId())
+                    .requesterId(userDto.getId())
+                    .build();
 
             if (eventDto.getParticipantLimit() == 0 || (eventDto.getRequestModeration() != null && !eventDto.getRequestModeration())) {
                 request.setStatus(RequestStatus.CONFIRMED);

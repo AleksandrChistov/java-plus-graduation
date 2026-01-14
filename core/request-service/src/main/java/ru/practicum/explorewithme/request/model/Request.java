@@ -1,9 +1,7 @@
 package ru.practicum.explorewithme.request.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 
 import java.time.LocalDateTime;
@@ -13,14 +11,17 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created", nullable = false, insertable = false, updatable = false,
-            columnDefinition = "TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime created;
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime created = LocalDateTime.now();
 
     @Column(name = "event_id", nullable = false)
     private Long eventId;
