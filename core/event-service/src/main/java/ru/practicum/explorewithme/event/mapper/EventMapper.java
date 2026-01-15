@@ -26,15 +26,11 @@ public interface EventMapper {
     Event toEvent(NewEventDto newEventDto, Long initiatorId, Long categoryId);
 
     @Mapping(target = "id", source = "event.id")
-    @Mapping(target = "confirmedRequests", expression = "java(confirmedRequests != null ? confirmedRequests : 0L)")
-    @Mapping(target = "views", expression = "java(views != null ? views : 0L)")
     @Mapping(target = "state", expression = "java(String.valueOf(event.getState()))")
-    EventFullDto toEventFullDto(Event event, ResponseCategoryDto category, UserShortDto initiator, Long confirmedRequests, Long views);
+    EventFullDto toEventFullDto(Event event, ResponseCategoryDto category, UserShortDto initiator, long confirmedRequests, double rating);
 
     @Mapping(target = "id", source = "event.id")
-    @Mapping(target = "confirmedRequests", expression = "java(confirmedRequests != null ? confirmedRequests : 0L)")
-    @Mapping(target = "views", expression = "java(views != null ? views : 0L)")
-    EventShortDto toEventShortDto(Event event, ResponseCategoryDto category, UserShortDto initiator, Long confirmedRequests, Long views);
+    EventShortDto toEventShortDto(Event event, ResponseCategoryDto category, UserShortDto initiator, long confirmedRequests, double rating);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "initiatorId", ignore = true)

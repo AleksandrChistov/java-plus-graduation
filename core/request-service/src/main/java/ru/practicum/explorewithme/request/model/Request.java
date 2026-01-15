@@ -1,25 +1,27 @@
 package ru.practicum.explorewithme.request.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "requests")
 @Getter
 @Setter
 @ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created", insertable = false, updatable = false)
-    private LocalDateTime created;
+    @Builder.Default
+    @Column(name = "created", nullable = false, updatable = false)
+    private Instant created = Instant.now();
 
     @Column(name = "event_id", nullable = false)
     private Long eventId;

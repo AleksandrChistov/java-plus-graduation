@@ -10,6 +10,8 @@ import ru.practicum.explorewithme.api.event.dto.LocationDto;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.explorewithme.api.shared.util.ConstantUtil.DATE_TIME_FORMAT;
+
 @Getter
 @Setter
 @ToString
@@ -26,7 +28,7 @@ public class NewEventDto {
     @Size(max = 7000, min = 20)
     private String description;
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime eventDate;
     @NotNull
     private LocationDto location;

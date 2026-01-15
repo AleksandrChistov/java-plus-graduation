@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.StatsClient;
+import ru.practicum.client.RecommendationsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.dto.EventShortDto;
@@ -44,7 +44,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private final UserClient userClient;
     private final RequestClient requestClient;
-    private final StatsClient statsClient;
+    private final RecommendationsClient recommendationsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
@@ -69,7 +69,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         log.info("Событие c ID {} создано пользователем с ID {}.", newEvent.getId(), userId);
 
-        return eventMapper.toEventFullDto(newEvent, categoryDto, userShortDto, 0L, 0L);
+        return eventMapper.toEventFullDto(newEvent, categoryDto, userShortDto, 0L, 0.0);
     }
 
     @Override
@@ -95,14 +95,15 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
         if (event.getPublishedOn() == null) {
-            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
+            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0.0);
         }
 
-        Long views = EventServiceUtil.getStatsViews(statsClient, event, true);
+        double rating = EventServiceUtil.getRatingsMap(recommendationsClient, Set.of(event.getId()))
+                .getOrDefault(event.getId(), 0.0);
 
         log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
 
-        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, rating);
     }
 
     @Override
@@ -126,12 +127,13 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
         if (event.getPublishedOn() == null) {
-            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
+            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0.0);
         }
 
-        Long views = EventServiceUtil.getStatsViews(statsClient, event, true);
+        double rating = EventServiceUtil.getRatingsMap(recommendationsClient, Set.of(event.getId()))
+                .getOrDefault(event.getId(), 0.0);
 
-        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, rating);
     }
 
     @Override
@@ -158,7 +160,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 .map(Event::getCategoryId)
                 .collect(Collectors.toSet());
 
-        Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
+        Map<Long, Double> ratings = EventServiceUtil.getRatingsMap(recommendationsClient, eventIds);
 
         Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
                 .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
@@ -168,7 +170,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 categoryDtos,
                 events,
                 confirmedRequests,
-                views,
+                ratings,
                 eventMapper
         );
     }

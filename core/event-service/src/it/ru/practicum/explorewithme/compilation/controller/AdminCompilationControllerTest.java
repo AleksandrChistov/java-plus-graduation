@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import ru.practicum.StatsView;
-import ru.practicum.client.StatsClient;
+import ru.practicum.client.RecommendationsClient;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.api.user.dto.UserDto;
 import ru.practicum.explorewithme.category.model.Category;
@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -66,7 +67,7 @@ class AdminCompilationControllerTest {
     private final UserClient userClient;
 
     @MockBean
-    private final StatsClient statsClient;
+    private final RecommendationsClient recommendationsClient;
 
     @BeforeEach
     void setUp(WebApplicationContext wac) {
@@ -113,8 +114,19 @@ class AdminCompilationControllerTest {
         when(userClient.getAllByIds(anySet()))
                 .thenReturn(List.of(new UserDto(1L, "Иванов Иван", "ivanov@mail.ru")));
 
-        when(statsClient.getStats(any()))
-                .thenReturn(List.of(new StatsView("app_name", "/events/1", 1L)));
+        when(recommendationsClient.getInteractionsCount(anySet(), anyInt()))
+                .thenReturn(
+                        Stream.of(
+                                RecommendedEventProto.newBuilder()
+                                        .setEventId(eventId1)
+                                        .setScore(0.4)
+                                        .build(),
+                                RecommendedEventProto.newBuilder()
+                                        .setEventId(eventId2)
+                                        .setScore(0.8)
+                                        .build()
+                        )
+                );
 
         when(requestClient.getRequestsCountsByStatusAndEventIds(eq(RequestStatus.CONFIRMED), anySet()))
                 .thenReturn(Map.of(eventId1, 10L, eventId2, 0L));

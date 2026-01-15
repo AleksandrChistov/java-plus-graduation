@@ -7,6 +7,8 @@ import ru.practicum.explorewithme.api.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.explorewithme.api.shared.util.ConstantUtil.DATE_TIME_FORMAT;
+
 @Getter
 @Setter
 @ToString
@@ -18,10 +20,10 @@ public class EventShortDto {
     private String title;
     private String annotation;
     private ResponseCategoryDto category;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_TIME_FORMAT)
     private LocalDateTime eventDate;
     private Boolean paid;
     private UserShortDto initiator;
     private Long confirmedRequests;
-    private Long views;
+    private Double rating;
 }

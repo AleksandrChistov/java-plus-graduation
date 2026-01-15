@@ -1,20 +1,22 @@
 package ru.practicum.explorewithme.request.service;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.practicum.client.UserActionClient;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
-import ru.practicum.explorewithme.api.request.dto.RequestDto;
-import ru.practicum.explorewithme.api.user.dto.UserDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
+import ru.practicum.explorewithme.api.request.dto.RequestDto;
+import ru.practicum.explorewithme.api.request.enums.RequestStatus;
+import ru.practicum.explorewithme.api.user.dto.UserDto;
 import ru.practicum.explorewithme.request.client.event.EventClient;
 import ru.practicum.explorewithme.request.client.user.UserClient;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdate;
 import ru.practicum.explorewithme.request.dto.RequestStatusUpdateResult;
-import ru.practicum.explorewithme.api.request.enums.RequestStatus;
 import ru.practicum.explorewithme.request.error.exception.NotFoundException;
 import ru.practicum.explorewithme.request.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.request.mapper.RequestMapper;
@@ -29,13 +31,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class RequestServiceImpl implements RequestService {
+
     private final RequestRepository requestRepository;
+
+    private final RequestMapper requestMapper;
+
     private final UserClient userClient;
     private final EventClient eventClient;
-    private final RequestMapper requestMapper;
-    private final EntityManager em;
+    private final UserActionClient userActionClient;
+
+    private final TransactionTemplate transactionTemplate;
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED) // we're going to handle transactions manually
     public RequestDto createRequest(Long userId, Long eventId) {
         log.info("Creating participation request for user {} to event {}", userId, eventId);
 
@@ -43,42 +51,43 @@ public class RequestServiceImpl implements RequestService {
 
         EventFullDto eventDto = eventClient.getByIdAndState(eventId, null);
 
-        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
-            throw new RuleViolationException("Participation request already exists for user " + userId + " to event " + eventId);
-        }
-
-        if (eventDto.getInitiator().getId().equals(userId)) {
-            throw new RuleViolationException("Initiator cannot request participation in their own event");
-        }
-
-        if (!eventDto.getState().equals(EventState.PUBLISHED.name())) {
-            throw new RuleViolationException("Cannot participate in unpublished event");
-        }
-
-        if (eventDto.getParticipantLimit() > 0) {
-            long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
-            if (confirmedRequests >= eventDto.getParticipantLimit()) {
-                throw new RuleViolationException("Participant limit reached for event");
+        Request updatedRequest = transactionTemplate.execute(status -> {
+            if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
+                throw new RuleViolationException("Participation request already exists for user " + userId + " to event " + eventId);
             }
-        }
 
-        Request request = new Request();
-        request.setEventId(eventDto.getId());
-        request.setRequesterId(userDto.getId());
+            if (eventDto.getInitiator().getId().equals(userId)) {
+                throw new RuleViolationException("Initiator cannot request participation in their own event");
+            }
 
-        if (eventDto.getParticipantLimit() == 0 || (eventDto.getRequestModeration() != null && !eventDto.getRequestModeration())) {
-            request.setStatus(RequestStatus.CONFIRMED);
-        } else {
-            request.setStatus(RequestStatus.PENDING);
-        }
+            if (!eventDto.getState().equals(EventState.PUBLISHED.name())) {
+                throw new RuleViolationException("Cannot participate in unpublished event");
+            }
 
-        Request savedRequest = requestRepository.save(request);
+            if (eventDto.getParticipantLimit() > 0) {
+                long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+                if (confirmedRequests >= eventDto.getParticipantLimit()) {
+                    throw new RuleViolationException("Participant limit reached for event");
+                }
+            }
 
-        // Явно перезагружаем из БД чтобы получить created
-        em.flush();
-        em.refresh(savedRequest);
+            Request request = Request.builder()
+                    .eventId(eventDto.getId())
+                    .requesterId(userDto.getId())
+                    .build();
 
-        return requestMapper.toRequestDto(savedRequest);
+            if (eventDto.getParticipantLimit() == 0 || (eventDto.getRequestModeration() != null && !eventDto.getRequestModeration())) {
+                request.setStatus(RequestStatus.CONFIRMED);
+            } else {
+                request.setStatus(RequestStatus.PENDING);
+            }
+
+            return requestRepository.saveAndFlush(request);
+        });
+
+        userActionClient.sendRegistrationEvent(userId, eventId);
+
+        return requestMapper.toRequestDto(updatedRequest);
     }
 
     @Override

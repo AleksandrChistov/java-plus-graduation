@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.StatsClient;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.practicum.client.RecommendationsClient;
 import ru.practicum.explorewithme.api.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.api.event.dto.EventFullDto;
 import ru.practicum.explorewithme.api.event.enums.EventState;
@@ -31,16 +33,13 @@ import ru.practicum.explorewithme.shared.util.CategoryServiceUtil;
 import ru.practicum.explorewithme.shared.util.EventServiceUtil;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class AdminEventServiceImpl implements AdminEventService {
 
     private final EventRepository eventRepository;
@@ -48,45 +47,60 @@ public class AdminEventServiceImpl implements AdminEventService {
 
     private final UserClient userClient;
     private final RequestClient requestClient;
-    private final StatsClient statsClient;
+    private final RecommendationsClient recommendationsClient;
 
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
     private final CategoryMapper categoryMapper;
 
+    private final TransactionTemplate transactionTemplate;
+
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED) // we're going to handle transactions manually
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
         log.info("Администратором обновляется событие c ID {}: {}", eventId, updateEventRequest);
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
+        Map<String, Object> resultData = transactionTemplate.execute(status -> {
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
-        validateCriticalRules(updateEventRequest, event);
+            validateCriticalRules(updateEventRequest, event);
 
-        ResponseCategoryDto categoryDto = CategoryServiceUtil
-                .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
+            ResponseCategoryDto categoryDto = CategoryServiceUtil
+                    .getResponseCategoryDto(categoryRepository, categoryMapper, event.getCategoryId());
 
-        eventMapper.updateEvent(event, updateEventRequest);
+            eventMapper.updateEvent(event, updateEventRequest);
 
-        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
-            event.setPublishedOn(LocalDateTime.now());
-        }
+            if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
+                event.setPublishedOn(LocalDateTime.now());
+            }
 
-        eventRepository.save(event);
+            Event eventUpdated = eventRepository.saveAndFlush(event);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("event", eventUpdated);
+            data.put("categoryDto", categoryDto);
+
+            return data;
+        });
+
+        Event event = (Event) resultData.get("event");
+        ResponseCategoryDto categoryDto = (ResponseCategoryDto) resultData.get("categoryDto");
 
         Long confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, Set.of(eventId)).getOrDefault(eventId, 0L);
 
         UserShortDto userShortDto = userMapper.toUserShortDto(userClient.getUserById(event.getInitiatorId()));
 
         if (event.getPublishedOn() == null) {
-            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0L);
+            return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, 0.0);
         }
 
-        Long views = EventServiceUtil.getStatsViews(statsClient, event, false);
+        double rating = EventServiceUtil.getRatingsMap(recommendationsClient, Set.of(event.getId()))
+                .getOrDefault(event.getId(), 0.0);
 
         log.info("Администратором обновлено событие c ID {}.", event.getId());
 
-        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, categoryDto, userShortDto, confirmedRequests, rating);
     }
 
     @Override
@@ -105,7 +119,7 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         Map<Long, Long> confirmedRequests = requestClient.getRequestsCountsByStatusAndEventIds(RequestStatus.CONFIRMED, eventIds);
 
-        Map<Long, Long> views = EventServiceUtil.getStatsViewsMap(statsClient, eventIds);
+        Map<Long, Double> ratings = EventServiceUtil.getRatingsMap(recommendationsClient, eventIds);
 
         Set<Long> userIds = events.stream()
                 .map(Event::getInitiatorId)
@@ -120,7 +134,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         Map<Long, ResponseCategoryDto> categoryDtos = CategoryServiceUtil
                 .getResponseCategoryDtoMap(categoryRepository, categoryMapper, categoriesIds);
 
-        return EventServiceUtil.getEventFullDtos(userShortDtos, categoryDtos, events, confirmedRequests, views, eventMapper);
+        return EventServiceUtil.getEventFullDtos(userShortDtos, categoryDtos, events, confirmedRequests, ratings, eventMapper);
     }
 
     private static Pageable makePageable(AdminEventDto adminEventDto) {
